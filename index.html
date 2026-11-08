@@ -185,7 +185,14 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
 .err{color:var(--out);font-size:12.5px;min-height:18px;margin-top:4px}
 .status{font-size:11.5px;color:var(--muted);text-align:center;padding:14px 0 6px}
 /* ---- games ---- */
-.gcard{display:flex;align-items:center;gap:14px;background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:10px;text-align:left;width:100%}
+.gcard{display:flex;align-items:center;gap:14px;background:var(--paper);border:1px solid var(--line);border-radius:18px 18px 0 0;padding:14px;text-align:left;width:100%}
+.rank{background:var(--paper2);border:1px solid var(--line);border-top:0;border-radius:0 0 18px 18px;padding:8px 14px 10px;margin-bottom:12px;display:flex;flex-direction:column;gap:5px}
+.rank .row{display:flex;align-items:center;gap:8px;font-size:14px}
+.rank .row .medal{width:22px;text-align:center}
+.rank .row .pill{padding:2px 9px;border-radius:999px;background:var(--c);color:#fff;font-size:12px;font-weight:500}
+.rank .row b{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:500}
+.rank .none{font-size:12.5px;color:var(--muted)}
+.rank .row.me b{color:var(--son)}
 .gcard .ico{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;font-size:28px;flex:none;color:#fff}
 .gcard .ico.b{background:#5C6BC0} .gcard .ico.p{background:#29B6F6}
 .gcard .t{font-size:17px;font-weight:500}
@@ -282,8 +289,10 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
 
     <!-- 게임 -->
     <section class="view" id="view-games">
-      <button class="gcard" data-game="blocks"><div class="ico b">🧱</div><div><div class="t">블록 쌓기</div><div class="d">줄을 채워 없애요. 좌우 스와이프, 탭으로 회전</div></div><div class="best">최고<b id="best-blocks">0</b></div></button>
-      <button class="gcard" data-game="plane"><div class="ico p">✈️</div><div><div class="t">비행기 슈팅</div><div class="d">드래그로 피하고 적을 맞혀요</div></div><div class="best">최고<b id="best-plane">0</b></div></button>
+      <button class="gcard" data-game="blocks"><div class="ico b">🧱</div><div><div class="t">블록 쌓기</div><div class="d">줄을 채워 없애요. 좌우 스와이프, 탭으로 회전</div></div><div class="best">내 최고<b id="best-blocks">0</b></div></button>
+      <div class="rank" id="rank-blocks"></div>
+      <button class="gcard" data-game="plane"><div class="ico p">✈️</div><div><div class="t">비행기 슈팅</div><div class="d">드래그로 피하고 적을 맞혀요</div></div><div class="best">내 최고<b id="best-plane">0</b></div></button>
+      <div class="rank" id="rank-plane"></div>
     </section>
   </main>
 
@@ -410,6 +419,7 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
     db.collection('families').doc(fam).collection('events').onSnapshot(snap=>{
       clearTimeout(timer); events=snap.docs.map(d=>({id:d.id,...d.data()})); renderCal();
     },err=>{ clearTimeout(timer); setStatus('일정을 불러오지 못했어요: '+err.code); });
+    db.collection('families').doc(fam).collection('scores').onSnapshot(snap=>{ scores=snap.docs.map(d=>({id:d.id,...d.data()})); emitScores(); },()=>{});
     db.collection('families').doc(fam).collection('allowance').onSnapshot(snap=>{
       ledger=snap.docs.map(d=>({id:d.id,...d.data()})); renderMoney();
     },err=>{ setStatus('용돈 기록을 불러오지 못했어요: '+err.code); });
@@ -429,6 +439,22 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
     renderAll();
   }
 
+
+  // ---------- 게임 점수 공유 ----------
+  let scores=localRead('fam-scores'); const scoreSubs=[];
+  function emitScores(){ scoreSubs.forEach(f=>f(scores)); }
+  window.FAM={
+    me:()=>me, members:MEMBERS, order:ORDER,
+    onScores(f){ scoreSubs.push(f); f(scores); },
+    async saveScore(game,member,score){
+      const id=game+'_'+member;
+      const cur=scores.find(x=>x.id===id);
+      if(cur&&cur.best>=score) return;
+      const data={game,member,best:score,updatedAt:Date.now()};
+      if(store.db){ await col('scores').doc(id).set(data); return; }
+      scores=scores.filter(x=>x.id!==id); scores.push({id,...data}); localWrite('fam-scores',scores); emitScores();
+    }
+  };
   // ---------- me ----------
   function setMe(m){
     me=m; try{localStorage.setItem('fam-me',m);}catch(e){}
@@ -600,7 +626,20 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
   $('#g-again').addEventListener('click',()=>{ msg.hidden=true; if(game){ cancelAnimationFrame(raf); game.start(); } });
   document.querySelectorAll('[data-game]').forEach(b=>b.addEventListener('click',()=>open(b.dataset.game)));
   Object.keys(best).forEach(k=>{ const e=$('#best-'+k); if(e)e.textContent=best[k].toLocaleString('ko-KR'); });
-  function over(kind,score){ saveBest(kind,score); $('#g-msg-score').textContent=score.toLocaleString('ko-KR')+'점'; msg.hidden=false; }
+  function over(kind,score){ saveBest(kind,score); $('#g-msg-score').textContent=score.toLocaleString('ko-KR')+'점'; msg.hidden=false;
+    if(window.FAM){ window.FAM.saveScore(kind,window.FAM.me(),score).catch(()=>{}); } }
+  function renderRank(scores){
+    if(!window.FAM) return;
+    const M=window.FAM.members, me=window.FAM.me();
+    ['blocks','plane'].forEach(g=>{
+      const el=$('#rank-'+g); if(!el) return;
+      const rows=scores.filter(x=>x.game===g).sort((a,b)=>b.best-a.best);
+      if(!rows.length){ el.innerHTML='<div class="none">아직 기록이 없어요. 첫 1등이 되어 보세요!</div>'; return; }
+      const medals=['🥇','🥈','🥉'];
+      el.innerHTML=rows.map((r,i)=>`<div class="row${r.member===me?' me':''}"><span class="medal">${medals[i]||(i+1)}</span><span class="pill m-${r.member}">${(M[r.member]||{n:'?'}).n}</span><b>${Number(r.best).toLocaleString('ko-KR')}점</b></div>`).join('');
+    });
+  }
+  if(window.FAM) window.FAM.onScores(renderRank);
   function fit(w,h){ const box=$('#g-box'); const W=box.clientWidth, H=box.clientHeight; const s=Math.min(W/w,H/h); cv.width=w; cv.height=h; cv.style.width=w*s+'px'; cv.style.height=h*s+'px'; }
 
   // ===== 블록 쌓기 =====
