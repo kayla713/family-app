@@ -65,8 +65,8 @@ textarea{resize:vertical;min-height:64px}
 h1,h2,h3{font-family:"Gowun Dodum","Noto Sans KR",sans-serif;font-weight:400;margin:0}
 
 .app{max-width:540px;margin:0 auto;min-height:100%;padding:0 0 calc(76px + env(safe-area-inset-bottom,0px))}
-header{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5;padding:14px 18px 10px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
-header h1{font-size:26px;letter-spacing:-.01em}
+header{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5;padding:10px 18px 8px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+header h1{font-size:22px;letter-spacing:-.01em}
 header .sub{font-size:12.5px;color:var(--muted);margin-top:-2px}
 .me{display:flex;gap:6px;align-items:center}
 .me span{font-size:12px;color:var(--muted);margin-right:2px}
@@ -80,30 +80,30 @@ main{padding:4px 16px 0}
 .view{display:none} .view.on{display:block}
 
 /* ---- calendar ---- */
-.cal{background:var(--paper);border-radius:18px;padding:14px 12px 10px;border:1px solid var(--line)}
-.cal-head{display:flex;align-items:center;justify-content:space-between;padding:0 4px 10px}
+.cal{background:var(--paper);border-radius:18px;padding:10px 8px 8px;border:1px solid var(--line)}
+.cal-head{display:flex;align-items:center;justify-content:space-between;padding:0 4px 6px}
 .cal-head h2{font-size:20px}
 .cal-head .nav{display:flex;gap:4px}
 .cal-head .nav button{width:34px;height:34px;border-radius:10px;background:var(--paper2);font-size:18px;line-height:1}
 .cal-head .today-btn{font-size:12.5px;padding:0 10px;height:34px;border-radius:10px;background:var(--paper2)}
 .dow{display:grid;grid-template-columns:repeat(7,1fr);font-size:11.5px;color:var(--muted);text-align:center;margin-bottom:4px}
 .dow span:first-child{color:var(--mom)} .dow span:last-child{color:var(--dad)}
-.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
-.day{aspect-ratio:1/1.05;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:14px;position:relative}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px}
+.day{aspect-ratio:1/0.82;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:13.5px;position:relative}
 .day.other{opacity:.3}
-.day.sel{background:var(--paper2)}
+.day.sel{background:var(--paper2);box-shadow:inset 0 0 0 1.5px var(--line)}
 .day.today .n{box-shadow:0 0 0 1.5px var(--todayring);border-radius:50%}
-.day .n{width:26px;height:26px;display:grid;place-items:center}
+.day .n{width:24px;height:24px;display:grid;place-items:center}
 .day.sun .n{color:var(--mom)} .day.sat .n{color:var(--dad)}
 .dots{display:flex;gap:3px;height:5px}
 .dots i{width:5px;height:5px;border-radius:50%;background:var(--c)}
 
-.filter{display:flex;gap:8px;margin:14px 2px 8px;align-items:center}
+.filter{display:flex;gap:8px;margin:10px 2px 4px;align-items:center}
 .filter .chip{display:flex;align-items:center;gap:6px;padding:5px 11px 5px 6px;border-radius:999px;border:1px solid var(--line);background:var(--paper);font-size:13px;opacity:.5}
 .filter .chip.on{opacity:1;border-color:var(--c)}
 .filter .chip .avatar{width:20px;height:20px;font-size:10px}
 
-.daylist h3{font-size:16px;margin:16px 4px 8px;display:flex;justify-content:space-between;align-items:baseline}
+.daylist h3{font-size:18px;margin:0 0 10px;display:flex;justify-content:space-between;align-items:baseline}
 .daylist h3 small{font-size:12px;color:var(--muted);font-weight:400}
 .ev{display:flex;gap:12px;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:12px 12px 12px 0;margin-bottom:8px;align-items:center;overflow:hidden}
 .ev .bar{width:5px;align-self:stretch;border-radius:0 4px 4px 0;background:linear-gradient(var(--c1),var(--c2))}
@@ -223,11 +223,8 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
         <button class="chip m-son on" data-f="son"><i class="avatar m-son">재</i>재빈</button>
       </div>
 
-      <div class="daylist">
-        <h3><span id="day-title"></span><small id="day-count"></small></h3>
-        <div id="ev-list"></div>
-      </div>
       <div class="status" id="status-cal"></div>
+      <div class="status" style="padding-top:0">날짜를 누르면 그날 일정이 보여요</div>
     </section>
 
     <!-- 용돈 -->
@@ -273,6 +270,16 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
 </div>
 
 <div class="scrim" id="scrim"></div>
+
+<!-- 날짜 일정 시트 -->
+<div class="sheet" id="sheet-day" role="dialog" aria-label="그날 일정">
+  <div class="handle"></div>
+  <div class="daylist">
+    <h3><span id="day-title"></span><small id="day-count"></small></h3>
+    <div id="ev-list"></div>
+  </div>
+  <div class="btns"><button class="cancel" data-close>닫기</button><button class="save" id="day-add">+ 일정 추가</button></div>
+</div>
 
 <!-- 일정 추가 시트 -->
 <div class="sheet" id="sheet-ev" role="dialog" aria-label="일정 추가">
@@ -414,7 +421,7 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
       b.setAttribute('aria-label',`${d.getMonth()+1}월 ${d.getDate()}일`);
       const dots=ORDER.filter(mm=>byDay[s]&&byDay[s].has(mm)).map(mm=>`<i class="m-${mm}"></i>`).join('');
       b.innerHTML=`<span class="n">${d.getDate()}</span><span class="dots">${dots}</span>`;
-      b.addEventListener('click',()=>{ sel=s; if(d.getMonth()!==m){cur=new Date(y,d.getMonth(),1);} renderCal(); });
+      b.addEventListener('click',()=>{ sel=s; if(d.getMonth()!==m){cur=new Date(y,d.getMonth(),1);} renderCal(); openSheet('#sheet-day'); });
       g.appendChild(b);
     }
     // day list
@@ -451,6 +458,7 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
   // event sheet
   function setWho(){ document.querySelectorAll('#ev-who button').forEach(b=>b.classList.toggle('on',whoPick[b.dataset.w])); }
   document.querySelectorAll('#ev-who button').forEach(b=>b.addEventListener('click',()=>{whoPick[b.dataset.w]=!whoPick[b.dataset.w];setWho();}));
+  $('#day-add').addEventListener('click',()=>{ closeSheets(); setTimeout(()=>$('#fab').click(),120); });
   $('#fab').addEventListener('click',()=>{
     $('#ev-title').value=''; $('#ev-time').value=''; $('#ev-memo').value=''; $('#ev-err').textContent='';
     $('#ev-date').value=sel; whoPick={dad:false,mom:false,son:false}; whoPick[me]=true; setWho();
