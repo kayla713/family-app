@@ -83,7 +83,8 @@ main{padding:4px 16px 0}
 .cal{background:var(--paper);border-radius:18px;padding:10px 8px 8px;border:1px solid var(--line)}
 .cal-head{display:flex;align-items:center;justify-content:space-between;padding:0 4px 6px}
 .cal-head h2{font-size:20px}
-.cal-head .nav{display:flex;gap:4px}
+.cal-head .nav{display:flex;gap:6px;align-items:center}
+.cal-head .nav h2{padding:0 4px;cursor:pointer}
 .cal-head .nav button{width:34px;height:34px;border-radius:10px;background:var(--paper2);font-size:18px;line-height:1}
 .cal-head .nav button.today-btn{width:auto;font-size:10.5px;padding:0 9px;height:34px;border-radius:10px;background:var(--paper2);white-space:nowrap;flex:none;word-break:keep-all}
 .dow{display:grid;grid-template-columns:repeat(7,1fr);font-size:11.5px;color:var(--muted);text-align:center;margin-bottom:4px}
@@ -194,7 +195,13 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
 .rank .none{font-size:12.5px;color:var(--muted)}
 .rank .row.me b{color:var(--son)}
 .gcard .ico{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;font-size:28px;flex:none;color:#fff}
-.gcard .ico.b{background:#5C6BC0} .gcard .ico.p{background:#29B6F6}
+.gcard .ico.b{background:#5C6BC0} .gcard .ico.p{background:#29B6F6} .gcard .ico.m{background:#8D6E63}
+#mole-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:min(92vw,360px);padding:10px}
+#mole-grid .hole{aspect-ratio:1;border-radius:50% 50% 45% 45%;background:radial-gradient(ellipse at 50% 70%,#3E2723 0 45%,#5D4037 46% 100%);position:relative;overflow:hidden;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+#mole-grid .hole span{position:absolute;left:50%;bottom:-70%;transform:translateX(-50%);font-size:44px;line-height:1;transition:bottom .12s}
+#mole-grid .hole.up span{bottom:12%}
+#mole-grid .hole.hit span{filter:brightness(1.6)}
+#g-ctl .g-time{font-size:26px;font-variant-numeric:tabular-nums;font-weight:500}
 .gcard .t{font-size:17px;font-weight:500}
 .gcard .d{font-size:13px;color:var(--muted)}
 .gcard .best{margin-left:auto;text-align:right;font-size:12px;color:var(--muted);flex:none}
@@ -240,10 +247,9 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
     <section class="view on" id="view-cal">
       <div class="cal">
         <div class="cal-head">
-          <h2 id="cal-title">2026년 11월</h2>
           <div class="nav">
-            <button class="today-btn" id="cal-today">오늘</button>
             <button id="cal-prev" aria-label="이전 달">‹</button>
+            <h2 id="cal-title" title="누르면 오늘로">2026년 11월</h2>
             <button id="cal-next" aria-label="다음 달">›</button>
           </div>
         </div>
@@ -293,6 +299,8 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
       <div class="rank" id="rank-blocks"></div>
       <button class="gcard" data-game="plane"><div class="ico p">✈️</div><div><div class="t">비행기 슈팅</div><div class="d">드래그로 피하고 적을 맞혀요</div></div><div class="best">내 최고<b id="best-plane">0</b></div></button>
       <div class="rank" id="rank-plane"></div>
+      <button class="gcard" data-game="mole"><div class="ico m">🐹</div><div><div class="t">두더지 잡기</div><div class="d">30초 동안 튀어나오는 두더지를 톡톡! 폭탄은 피해요</div></div><div class="best">내 최고<b id="best-mole">0</b></div></button>
+      <div class="rank" id="rank-mole"></div>
     </section>
   </main>
 
@@ -519,9 +527,14 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
       el.appendChild(card);
     });
   }
+  (function(){ const g=$('#grid'); let x0=null,y0=null;
+    g.addEventListener('touchstart',e=>{x0=e.touches[0].clientX;y0=e.touches[0].clientY;},{passive:true});
+    g.addEventListener('touchend',e=>{ if(x0===null)return; const dx=e.changedTouches[0].clientX-x0, dy=e.changedTouches[0].clientY-y0; x0=null;
+      if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.5){ cur=new Date(cur.getFullYear(),cur.getMonth()+(dx<0?1:-1),1); renderCal(); } },{passive:true});
+  })();
   $('#cal-prev').addEventListener('click',()=>{cur=new Date(cur.getFullYear(),cur.getMonth()-1,1);renderCal();});
   $('#cal-next').addEventListener('click',()=>{cur=new Date(cur.getFullYear(),cur.getMonth()+1,1);renderCal();});
-  $('#cal-today').addEventListener('click',()=>{cur=new Date();sel=todayStr;renderCal();});
+  $('#cal-title').addEventListener('click',()=>{cur=new Date();sel=todayStr;renderCal();});
 
   // ---------- sheets ----------
   function openSheet(id){ $('#scrim').classList.add('on'); $(id).classList.add('on'); }
@@ -608,17 +621,18 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
   const $=s=>document.querySelector(s);
   const ov=$('#game-ov'), cv=$('#gcv'), ctx=cv.getContext('2d');
   const scoreEl=$('#g-score'), bestEl=$('#g-best'), titleEl=$('#g-title'), ctl=$('#g-ctl'), msg=$('#g-msg');
-  let raf=0, game=null, best={blocks:0,plane:0};
+  let raf=0, game=null, best={blocks:0,plane:0,mole:0};
   try{ best=Object.assign(best,JSON.parse(localStorage.getItem('fam-best')||'{}')); }catch(e){}
   function saveBest(k,v){ if(v>best[k]){ best[k]=v; try{localStorage.setItem('fam-best',JSON.stringify(best));}catch(e){} } bestEl.textContent=best[k].toLocaleString('ko-KR'); $('#best-'+k).textContent=best[k].toLocaleString('ko-KR'); }
   function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
   function open(kind){
     ov.classList.add('on'); document.body.style.overflow='hidden';
-    titleEl.textContent=kind==='blocks'?'블록 쌓기':'비행기 슈팅';
+    titleEl.textContent={blocks:'블록 쌓기',plane:'비행기 슈팅',mole:'두더지 잡기'}[kind];
+    cv.style.display=kind==='mole'?'none':'';
     bestEl.textContent=best[kind].toLocaleString('ko-KR');
     msg.hidden=true;
     cancelAnimationFrame(raf);
-    game=kind==='blocks'?Blocks():Plane();
+    game=kind==='blocks'?Blocks():kind==='plane'?Plane():Mole();
     game.start();
   }
   function close(){ ov.classList.remove('on'); document.body.style.overflow=''; cancelAnimationFrame(raf); if(game&&game.stop)game.stop(); game=null; }
@@ -631,7 +645,7 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
   function renderRank(scores){
     if(!window.FAM) return;
     const M=window.FAM.members, me=window.FAM.me();
-    ['blocks','plane'].forEach(g=>{
+    ['blocks','plane','mole'].forEach(g=>{
       const el=$('#rank-'+g); if(!el) return;
       const rows=scores.filter(x=>x.game===g).sort((a,b)=>b.best-a.best);
       if(!rows.length){ el.innerHTML='<div class="none">아직 기록이 없어요. 첫 1등이 되어 보세요!</div>'; return; }
@@ -675,6 +689,25 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
     return { start(){ grid=Array.from({length:ROWS},()=>Array(COLS).fill(0)); cur=rnd(); score=0; lines=0; speed=600; last=0; dead=false; scoreEl.textContent='0'; window.addEventListener('keydown',key); draw(); raf=requestAnimationFrame(loop); }, stop(){ dead=true; window.removeEventListener('keydown',key); } };
   }
 
+
+  // ===== 두더지 잡기 =====
+  function Mole(){
+    const box=$('#g-box'); let grid, score, left, dead, timers=[], tick;
+    ctl.innerHTML='<div class="g-hint">두더지 🐹 +10 · 황금 두더지 🐿️ +30 · 폭탄 💣 −15</div><div class="g-time" id="g-time">30</div>';
+    function clear(){ timers.forEach(clearTimeout); timers=[]; clearInterval(tick); }
+    function pop(){ if(dead)return; const holes=[...grid.children].filter(h=>!h.classList.contains('up')); if(holes.length){ const h=holes[Math.floor(Math.random()*holes.length)]; const r=Math.random(); const kind=r<.12?'bomb':r<.25?'gold':'mole'; h.dataset.k=kind; h.querySelector('span').textContent=kind==='bomb'?'💣':kind==='gold'?'🐿️':'🐹'; h.classList.add('up'); const stay=kind==='gold'?550:Math.max(450,1000-(30-left)*18); timers.push(setTimeout(()=>{h.classList.remove('up');},stay)); }
+      timers.push(setTimeout(pop,Math.max(280,700-(30-left)*14))); }
+    function whack(h){ if(dead||!h.classList.contains('up'))return; const k=h.dataset.k; score+=k==='bomb'?-15:k==='gold'?30:10; if(score<0)score=0; scoreEl.textContent=score; h.classList.remove('up'); h.classList.add('hit'); setTimeout(()=>h.classList.remove('hit'),150); if(navigator.vibrate)navigator.vibrate(k==='bomb'?80:15); }
+    return {
+      start(){ clear(); dead=false; score=0; left=30; scoreEl.textContent='0'; $('#g-time').textContent=left;
+        if(grid)grid.remove(); grid=document.createElement('div'); grid.id='mole-grid';
+        for(let i=0;i<9;i++){ const h=document.createElement('div'); h.className='hole'; h.innerHTML='<span>🐹</span>'; h.addEventListener('pointerdown',e=>{e.preventDefault();whack(h);}); grid.appendChild(h); }
+        box.insertBefore(grid,msg);
+        tick=setInterval(()=>{ left--; $('#g-time').textContent=left; if(left<=0){ dead=true; clear(); [...grid.children].forEach(h=>h.classList.remove('up')); over('mole',score); } },1000);
+        timers.push(setTimeout(pop,500)); },
+      stop(){ dead=true; clear(); if(grid){grid.remove();grid=null;} }
+    };
+  }
   // ===== 비행기 슈팅 =====
   function Plane(){
     const W=240,H=400; fit(W,H);
