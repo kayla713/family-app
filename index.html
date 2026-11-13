@@ -90,13 +90,15 @@ main{padding:4px 16px 0}
 .dow{display:grid;grid-template-columns:repeat(7,1fr);font-size:11.5px;color:var(--muted);text-align:center;margin-bottom:4px}
 .dow span:first-child{color:var(--mom)} .dow span:last-child{color:var(--dad)}
 .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px}
-.day{aspect-ratio:1/0.82;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:13.5px;position:relative}
+.day{aspect-ratio:1/0.92;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:13.5px;position:relative}
 .day.other{opacity:.3}
 .day.sel{background:var(--paper2);box-shadow:inset 0 0 0 1.5px var(--line)}
 .day.today .n{box-shadow:0 0 0 1.5px var(--todayring);border-radius:50%}
 .day .n{width:24px;height:24px;display:grid;place-items:center}
 .day.sun .n{color:var(--mom)} .day.sat .n{color:var(--dad)}
 .dots{display:flex;gap:3px;height:5px}
+.day .hn{font-size:8px;line-height:1;color:var(--mom);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;margin-top:-2px}
+.day.hol .n{font-weight:500}
 .dots i{width:5px;height:5px;border-radius:50%;background:var(--c)}
 
 .filter{display:flex;gap:8px;margin:10px 2px 4px;align-items:center}
@@ -196,6 +198,7 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
 .rank .row.me b{color:var(--son)}
 .gcard .ico{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;font-size:28px;flex:none;color:#fff}
 .gcard .ico.b{background:#5C6BC0} .gcard .ico.p{background:#29B6F6} .gcard .ico.m{background:#8D6E63}
+.gcard .ico.j{background:#FF7043}
 #mole-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:min(92vw,360px);padding:10px}
 #mole-grid .hole{aspect-ratio:1;border-radius:50% 50% 45% 45%;background:radial-gradient(ellipse at 50% 70%,#3E2723 0 45%,#5D4037 46% 100%);position:relative;overflow:hidden;touch-action:manipulation;user-select:none;-webkit-user-select:none}
 #mole-grid .hole span{position:absolute;left:50%;bottom:-70%;transform:translateX(-50%);font-size:44px;line-height:1;transition:bottom .12s}
@@ -262,7 +265,7 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
 
 
       <div class="daylist" id="today-box" style="margin-top:14px">
-        <h3 style="font-size:16px;margin:0 4px 8px"><span>오늘 일정</span><small id="today-count"></small></h3>
+        <h3 style="font-size:16px;margin:0 4px 8px"><span id="today-head">오늘 일정</span><small id="today-count"></small></h3>
         <div id="today-list"></div>
       </div>
       <div class="status" id="status-cal"></div>
@@ -304,6 +307,8 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
       <div class="rank" id="rank-plane"></div>
       <button class="gcard" data-game="mole"><div class="ico m">🐹</div><div><div class="t">두더지 잡기</div><div class="d">30초 동안 튀어나오는 두더지를 톡톡! 폭탄은 피해요</div></div><div class="best">내 최고<b id="best-mole">0</b></div></button>
       <div class="rank" id="rank-mole"></div>
+      <button class="gcard" data-game="jump"><div class="ico j">🦖</div><div><div class="t">점프 게임</div><div class="d">화면을 톡 쳐서 장애물을 뛰어넘어요. 동전 🪙은 보너스</div></div><div class="best">내 최고<b id="best-jump">0</b></div></button>
+      <div class="rank" id="rank-jump"></div>
     </section>
   </main>
 
@@ -398,6 +403,15 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
   const DOW=['일','월','화','수','목','금','토'];
   const todayStr=ymd(new Date());
 
+  // ---------- 대한민국 공휴일 ----------
+  const FIXED={'01-01':'신정','03-01':'삼일절','05-05':'어린이날','06-06':'현충일','08-15':'광복절','10-03':'개천절','10-09':'한글날','12-25':'성탄절'};
+  const LUNAR={
+    '2025-01-28':'설 연휴','2025-01-29':'설날','2025-01-30':'설 연휴','2025-03-03':'대체공휴일','2025-05-05':'부처님오신날','2025-05-06':'대체공휴일','2025-06-03':'대통령선거','2025-10-05':'추석 연휴','2025-10-06':'추석','2025-10-07':'추석 연휴','2025-10-08':'대체공휴일',
+    '2026-02-16':'설 연휴','2026-02-17':'설날','2026-02-18':'설 연휴','2026-03-02':'대체공휴일','2026-05-24':'부처님오신날','2026-05-25':'대체공휴일','2026-06-03':'지방선거','2026-08-17':'대체공휴일','2026-09-24':'추석 연휴','2026-09-25':'추석','2026-09-26':'추석 연휴','2026-10-05':'대체공휴일',
+    '2027-02-05':'설 연휴','2027-02-06':'설날','2027-02-07':'설 연휴','2027-02-08':'대체공휴일','2027-05-13':'부처님오신날','2027-08-16':'대체공휴일','2027-09-14':'추석 연휴','2027-09-15':'추석','2027-09-16':'추석 연휴','2027-10-04':'대체공휴일','2027-10-11':'대체공휴일','2027-12-27':'대체공휴일',
+    '2028-01-26':'설 연휴','2028-01-27':'설날','2028-01-28':'설 연휴','2028-04-12':'국회의원선거','2028-05-02':'부처님오신날','2028-10-02':'추석 연휴','2028-10-03':'추석·개천절','2028-10-04':'추석 연휴','2028-10-05':'대체공휴일'
+  };
+  function holiday(s){ return LUNAR[s]||FIXED[s.slice(5)]||''; }
   // ---------- state ----------
   let me='dad', events=[], ledger=[], cur=new Date(), sel=todayStr;
   let filter={dad:true,mom:true,son:true};
@@ -498,21 +512,23 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
     for(let i=0;i<42;i++){
       const d=new Date(start); d.setDate(start.getDate()+i);
       const s=ymd(d), b=document.createElement('button');
-      b.className='day'+(d.getMonth()!==m?' other':'')+(s===todayStr?' today':'')+(s===sel?' sel':'')+(d.getDay()===0?' sun':'')+(d.getDay()===6?' sat':'');
+      const hn=holiday(s);
+      b.className='day'+(d.getMonth()!==m?' other':'')+(s===todayStr?' today':'')+(s===sel?' sel':'')+(d.getDay()===0||hn?' sun':'')+(d.getDay()===6&&!hn?' sat':'')+(hn?' hol':'');
       b.setAttribute('aria-label',`${d.getMonth()+1}월 ${d.getDate()}일`);
       const dots=ORDER.filter(mm=>byDay[s]&&byDay[s].has(mm)).map(mm=>`<i class="m-${mm}"></i>`).join('');
-      b.innerHTML=`<span class="n">${d.getDate()}</span><span class="dots">${dots}</span>`;
+      b.innerHTML=`<span class="n">${d.getDate()}</span>${hn?`<span class="hn">${hn}</span>`:''}<span class="dots">${dots}</span>`;
       b.addEventListener('click',()=>{ sel=s; if(d.getMonth()!==m){cur=new Date(y,d.getMonth(),1);} renderCal(); openSheet('#sheet-day'); });
       g.appendChild(b);
     }
     // day list
     const sd=new Date(sel+'T00:00:00');
-    $('#day-title').textContent=`${sd.getMonth()+1}월 ${sd.getDate()}일 ${DOW[sd.getDay()]}요일`+(sel===todayStr?' (오늘)':'');
+    $('#day-title').textContent=`${sd.getMonth()+1}월 ${sd.getDate()}일 ${DOW[sd.getDay()]}요일`+(holiday(sel)?' · '+holiday(sel):'')+(sel===todayStr?' (오늘)':'');
     const list=visibleEvents().filter(e=>e.date===sel).sort((a,b)=>(a.time||'99')<(b.time||'99')?-1:1);
     $('#day-count').textContent=list.length?`${list.length}개`:'';
     renderEvList($('#ev-list'),list,'이 날은 일정이 없어요.');
     const tlist=visibleEvents().filter(e=>e.date===todayStr).sort((a,b)=>(a.time||'99')<(b.time||'99')?-1:1);
     $('#today-count').textContent=tlist.length?`${tlist.length}개`:'';
+    $('#today-head').textContent='오늘 일정'+(holiday(todayStr)?' · '+holiday(todayStr):'');
     renderEvList($('#today-list'),tlist,'오늘은 일정이 없어요.');
   }
   function renderEvList(el,list,emptyText){
@@ -624,18 +640,18 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
   const $=s=>document.querySelector(s);
   const ov=$('#game-ov'), cv=$('#gcv'), ctx=cv.getContext('2d');
   const scoreEl=$('#g-score'), bestEl=$('#g-best'), titleEl=$('#g-title'), ctl=$('#g-ctl'), msg=$('#g-msg');
-  let raf=0, game=null, best={blocks:0,plane:0,mole:0};
+  let raf=0, game=null, best={blocks:0,plane:0,mole:0,jump:0};
   try{ best=Object.assign(best,JSON.parse(localStorage.getItem('fam-best')||'{}')); }catch(e){}
   function saveBest(k,v){ if(v>best[k]){ best[k]=v; try{localStorage.setItem('fam-best',JSON.stringify(best));}catch(e){} } bestEl.textContent=best[k].toLocaleString('ko-KR'); $('#best-'+k).textContent=best[k].toLocaleString('ko-KR'); }
   function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
   function open(kind){
     ov.classList.add('on'); document.body.style.overflow='hidden';
-    titleEl.textContent={blocks:'블록 쌓기',plane:'비행기 슈팅',mole:'두더지 잡기'}[kind];
+    titleEl.textContent={blocks:'블록 쌓기',plane:'비행기 슈팅',mole:'두더지 잡기',jump:'점프 게임'}[kind];
     cv.style.display=kind==='mole'?'none':'';
     bestEl.textContent=best[kind].toLocaleString('ko-KR');
     msg.hidden=true;
     cancelAnimationFrame(raf);
-    game=kind==='blocks'?Blocks():kind==='plane'?Plane():Mole();
+    game=kind==='blocks'?Blocks():kind==='plane'?Plane():kind==='mole'?Mole():Jump();
     game.start();
   }
   function close(){ ov.classList.remove('on'); document.body.style.overflow=''; cancelAnimationFrame(raf); if(game&&game.stop)game.stop(); game=null; }
@@ -648,7 +664,7 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
   function renderRank(scores){
     if(!window.FAM) return;
     const M=window.FAM.members, me=window.FAM.me();
-    ['blocks','plane','mole'].forEach(g=>{
+    ['blocks','plane','mole','jump'].forEach(g=>{
       const el=$('#rank-'+g); if(!el) return;
       const rows=scores.filter(x=>x.game===g).sort((a,b)=>b.best-a.best);
       if(!rows.length){ el.innerHTML='<div class="none">아직 기록이 없어요. 첫 1등이 되어 보세요!</div>'; return; }
@@ -710,6 +726,44 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
         timers.push(setTimeout(pop,500)); },
       stop(){ dead=true; clear(); if(grid){grid.remove();grid=null;} }
     };
+  }
+
+
+  // ===== 점프 게임 =====
+  function Jump(){
+    const W=320,H=200,G=H-30; fit(W,H);
+    let y,vy,obs,coins,clouds,dist,speed,dead,frame,coinN,floats,legT,jumps;
+    ctl.innerHTML='<div class="g-hint">화면을 톡! 치면 점프 · 공중에서 한 번 더 톡 치면 2단 점프</div>';
+    function jump(){ if(dead)return; if(y>=G-0.5){ vy=-9.2; jumps=1; } else if(jumps<2){ vy=-8; jumps=2; } }
+    cv.onpointerdown=e=>{e.preventDefault();jump();}; cv.onpointermove=null; cv.onpointerup=null;
+    const key=e=>{ if(e.key===' '||e.key==='ArrowUp')jump(); };
+    function dino(x,yy){ const t=Math.floor(legT/6)%2; ctx.fillStyle='#4CAF50';
+      ctx.fillRect(x+8,yy-30,16,18); ctx.fillRect(x+16,yy-38,16,12); ctx.fillRect(x,yy-24,10,8);
+      ctx.fillRect(x+6,yy-12,5,12-(y<G&&t?4:0)); ctx.fillRect(x+15,yy-12,5,12-(y<G&&!t?4:0));
+      ctx.fillStyle='#fff'; ctx.fillRect(x+24,yy-36,4,4); ctx.fillStyle='#1B5E20'; ctx.fillRect(x+26,yy-35,2,2);
+      ctx.fillStyle='#4CAF50'; ctx.fillRect(x+24,yy-28,10,3); }
+    function step(){ frame++; legT++; dist+=speed/10; speed=Math.min(9,4+dist/400);
+      vy+=0.55; y+=vy; if(y>G){y=G;vy=0;jumps=0;}
+      if(frame%Math.max(45,110-Math.floor(dist/80))===0){ const r=Math.random(); if(r<.6){ const w=14+Math.random()*16, h=18+Math.random()*16; obs.push({x:W+10,w,h,bird:false}); } else { obs.push({x:W+10,w:22,h:12,bird:true,fy:G-44-Math.random()*20}); } }
+      if(frame%90===30&&Math.random()<.7){ coins.push({x:W+10,y:G-50-Math.random()*40}); }
+      if(frame%50===0) clouds.push({x:W+40,y:20+Math.random()*50,s:.6+Math.random()*.6});
+      obs.forEach(o=>o.x-=speed); coins.forEach(c=>c.x-=speed); clouds.forEach(c=>c.x-=speed*0.3);
+      const dx=40,dy=y; const bx1=dx+4,bx2=dx+30,by1=dy-36,by2=dy;
+      for(const o of obs){ const oy1=o.bird?o.fy-o.h:G-o.h, oy2=o.bird?o.fy:G; if(bx2>o.x&&bx1<o.x+o.w&&by2>oy1&&by1<oy2){ dead=true; over('jump',Math.floor(dist)+coinN*10); return; } }
+      coins=coins.filter(c=>{ if(Math.abs(c.x-(dx+17))<16&&Math.abs(c.y-(dy-18))<22){ coinN++; floats.push({x:c.x,y:c.y,life:30}); return false; } return c.x>-20; });
+      obs=obs.filter(o=>o.x>-50); clouds=clouds.filter(c=>c.x>-60); floats.forEach(f=>{f.y-=1;f.life--;}); floats=floats.filter(f=>f.life>0);
+      scoreEl.textContent=Math.floor(dist)+coinN*10; }
+    function draw(){ const sky=ctx.createLinearGradient(0,0,0,H); sky.addColorStop(0,'#1A237E'); sky.addColorStop(1,'#283593'); ctx.fillStyle=sky; ctx.fillRect(0,0,W,H);
+      ctx.fillStyle='rgba(255,255,255,.18)'; clouds.forEach(c=>{ ctx.beginPath(); ctx.ellipse(c.x,c.y,26*c.s,9*c.s,0,0,7); ctx.fill(); });
+      ctx.fillStyle='#3E2723'; ctx.fillRect(0,G,W,H-G); ctx.fillStyle='#6D4C41'; for(let i=0;i<W;i+=24){ ctx.fillRect((i-(frame*speed)%24),G,12,3); }
+      obs.forEach(o=>{ if(o.bird){ const f=Math.floor(frame/8)%2; ctx.fillStyle='#FFB300'; ctx.fillRect(o.x+4,o.fy-9,14,7); ctx.fillRect(o.x,o.fy-(f?14:4),8,5); ctx.fillRect(o.x+14,o.fy-(f?14:4),8,5); ctx.fillStyle='#FF6F00'; ctx.fillRect(o.x+18,o.fy-7,4,3); }
+        else { ctx.fillStyle='#8BC34A'; ctx.fillRect(o.x,G-o.h,o.w,o.h); ctx.fillStyle='#558B2F'; ctx.fillRect(o.x+o.w/2-2,G-o.h-6,4,6); ctx.fillRect(o.x,G-o.h+4,o.w,3); } });
+      coins.forEach(c=>{ ctx.fillStyle='#FFD54F'; ctx.beginPath(); ctx.arc(c.x,c.y,6,0,7); ctx.fill(); ctx.fillStyle='#FFA000'; ctx.beginPath(); ctx.arc(c.x,c.y,3,0,7); ctx.fill(); });
+      dino(40,y);
+      ctx.font='bold 12px "Noto Sans KR",sans-serif'; ctx.textAlign='center'; floats.forEach(f=>{ ctx.globalAlpha=f.life/30; ctx.fillStyle='#FFEB3B'; ctx.fillText('+10',f.x,f.y); }); ctx.globalAlpha=1; }
+    function loop(){ if(dead)return; step(); if(dead)return; draw(); raf=requestAnimationFrame(loop); }
+    return { start(){ y=G; vy=0; obs=[]; coins=[]; clouds=[{x:80,y:30,s:1},{x:220,y:55,s:.7}]; dist=0; speed=4; dead=false; frame=0; coinN=0; floats=[]; legT=0; jumps=0; scoreEl.textContent='0'; window.addEventListener('keydown',key); raf=requestAnimationFrame(loop); },
+      stop(){ dead=true; window.removeEventListener('keydown',key); } };
   }
   // ===== 비행기 슈팅 =====
   function Plane(){
