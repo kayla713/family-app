@@ -149,7 +149,7 @@ main{padding:4px 16px 0}
 
 /* ---- tab bar ---- */
 nav.tabs{position:fixed;bottom:0;left:0;right:0;background:var(--paper);border-top:1px solid var(--line);padding:6px 0 calc(8px + env(safe-area-inset-bottom,0px));z-index:6}
-nav.tabs .inner{max-width:540px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1fr}
+nav.tabs .inner{max-width:540px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1fr 1fr}
 nav.tabs button{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:var(--muted);padding:6px}
 nav.tabs button.on{color:var(--ink)}
 nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -187,6 +187,29 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
 .sheet .btns .save{background:var(--ink);color:var(--bg)}
 .err{color:var(--out);font-size:12.5px;min-height:18px;margin-top:4px}
 .status{font-size:11.5px;color:var(--muted);text-align:center;padding:14px 0 6px}
+
+/* ---- chat ---- */
+#view-chat{display:none;flex-direction:column;height:calc(100dvh - 60px - 76px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))}
+#view-chat.on{display:flex}
+#chat-list{flex:1;overflow-y:auto;padding:4px 2px 10px;display:flex;flex-direction:column;gap:8px}
+.msg{display:flex;flex-direction:column;align-items:flex-start;max-width:80%}
+.msg.mine{align-self:flex-end;align-items:flex-end}
+.msg .nm{font-size:11.5px;color:var(--muted);margin:0 6px 2px}
+.msg .bub{background:var(--paper);border:1px solid var(--line);border-radius:16px 16px 16px 4px;padding:8px 12px;font-size:14.5px;white-space:pre-wrap;word-break:break-word}
+.msg.mine .bub{background:var(--c);color:#fff;border-color:transparent;border-radius:16px 16px 4px 16px}
+.msg .bub img{display:block;max-width:220px;max-height:260px;border-radius:10px;cursor:pointer}
+.msg .bub.img{padding:4px}
+.msg .meta{display:flex;gap:6px;align-items:center;font-size:10.5px;color:var(--muted);margin:2px 6px 0}
+.msg .meta button{color:var(--muted);font-size:12px}
+.msg .datechip{align-self:center;font-size:11px;color:var(--muted);background:var(--paper2);padding:3px 10px;border-radius:999px;margin:6px 0}
+#chat-bar{display:flex;gap:8px;align-items:flex-end;padding:8px 0 4px;border-top:1px solid var(--line);background:var(--bg)}
+#chat-bar textarea{flex:1;min-height:42px;max-height:110px;border-radius:21px;padding:10px 14px;resize:none}
+#chat-bar button{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-size:20px;background:var(--paper2);flex:none}
+#chat-bar #chat-send{background:var(--ink);color:var(--bg)}
+#chat-bar #chat-send:disabled{opacity:.4}
+#img-view{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:40;display:none;place-items:center}
+#img-view.on{display:grid}
+#img-view img{max-width:96vw;max-height:90vh;border-radius:8px}
 /* ---- games ---- */
 .gcard{display:flex;align-items:center;gap:14px;background:var(--paper);border:1px solid var(--line);border-radius:18px 18px 0 0;padding:14px;text-align:left;width:100%}
 .rank{background:var(--paper2);border:1px solid var(--line);border-top:0;border-radius:0 0 18px 18px;padding:8px 14px 10px;margin-bottom:12px;display:flex;flex-direction:column;gap:5px}
@@ -310,6 +333,18 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
       <button class="gcard" data-game="jump"><div class="ico j">🦖</div><div><div class="t">점프 게임</div><div class="d">화면을 톡 쳐서 장애물을 뛰어넘어요. 동전 🪙은 보너스</div></div><div class="best">내 최고<b id="best-jump">0</b></div></button>
       <div class="rank" id="rank-jump"></div>
     </section>
+
+    <!-- 채팅 -->
+    <section class="view" id="view-chat">
+      <div id="chat-list"></div>
+      <div id="chat-bar">
+        <button id="chat-photo" aria-label="사진 보내기">📷</button>
+        <input type="file" id="chat-file" accept="image/*" hidden>
+        <textarea id="chat-text" rows="1" placeholder="메시지 입력"></textarea>
+        <button id="chat-send" aria-label="보내기">➤</button>
+      </div>
+      <div class="status" id="status-chat" style="padding:4px 0 0"></div>
+    </section>
   </main>
 
   <button class="fab" id="fab"><span>+</span>일정 추가</button>
@@ -325,11 +360,15 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
       <button data-tab="games">
         <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="11" rx="4"/><path d="M7 11v3M5.5 12.5h3M15.5 11.5h.01M18 13.5h.01"/></svg>게임
       </button>
+      <button data-tab="chat">
+        <svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg>채팅
+      </button>
     </div>
   </nav>
 </div>
 
 <div class="scrim" id="scrim"></div>
+<div id="img-view"><img alt=""></div>
 <div class="gov" id="game-ov" role="dialog" aria-label="게임">
   <div class="top"><button id="g-close" aria-label="닫기">‹</button><h2 id="g-title"></h2><div class="sc">점수 <b id="g-score">0</b><small>최고 <span id="g-best">0</span></small></div></div>
   <div id="g-box" style="position:relative"><canvas id="gcv"></canvas>
@@ -413,12 +452,12 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
   };
   function holiday(s){ return LUNAR[s]||FIXED[s.slice(5)]||''; }
   // ---------- state ----------
-  let me='dad', events=[], ledger=[], cur=new Date(), sel=todayStr;
+  let me='dad', events=[], ledger=[], chat=[], cur=new Date(), sel=todayStr;
   let filter={dad:true,mom:true,son:true};
   let whoPick={dad:false,mom:false,son:false};
   let kind='in';
   try{ me=localStorage.getItem('fam-me')||'dad'; }catch(e){}
-  try{ const f=localStorage.getItem('fam-tab'); if(f==='money'||f==='games') switchTab(f); }catch(e){}
+  try{ const f=localStorage.getItem('fam-tab'); if(f==='money'||f==='games'||f==='chat') switchTab(f); }catch(e){}
 
   // ---------- storage layer (db capability, or localStorage fallback) ----------
   const store={db:null,mode:'local'};
@@ -428,7 +467,7 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
   function setStatus(t){ $('#status-cal').textContent=t; $('#status-money').textContent=t; }
 
   async function initStore(){
-    events=localRead('fam-events'); ledger=localRead('fam-ledger');
+    events=localRead('fam-events'); ledger=localRead('fam-ledger'); chat=localRead('fam-chat');
     renderAll();
     const cfg=window.FAMILY_CONFIG||{};
     if(!window.firebase||!cfg.firebase||!cfg.firebase.projectId||cfg.firebase.projectId==='YOUR_PROJECT_ID'){
@@ -445,6 +484,7 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
       clearTimeout(timer); events=snap.docs.map(d=>({id:d.id,...d.data()})); renderCal();
     },err=>{ clearTimeout(timer); setStatus('일정을 불러오지 못했어요: '+err.code); });
     db.collection('families').doc(fam).collection('scores').onSnapshot(snap=>{ scores=snap.docs.map(d=>({id:d.id,...d.data()})); emitScores(); },()=>{});
+    db.collection('families').doc(fam).collection('chat').onSnapshot(snap=>{ chat=snap.docs.map(d=>({id:d.id,...d.data()})); renderChat(); },err=>{ $('#status-chat').textContent='채팅을 불러오지 못했어요: '+err.code; });
     db.collection('families').doc(fam).collection('allowance').onSnapshot(snap=>{
       ledger=snap.docs.map(d=>({id:d.id,...d.data()})); renderMoney();
     },err=>{ setStatus('용돈 기록을 불러오지 못했어요: '+err.code); });
@@ -452,14 +492,15 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
   function col(c){ return store.db.collection('families').doc(store.fam).collection(c); }
   async function add(c,data){
     if(store.db){ await col(c).add(data); return; }
-    const key=c==='events'?'fam-events':'fam-ledger';
-    const arr=c==='events'?events:ledger;
+    const key={events:'fam-events',allowance:'fam-ledger',chat:'fam-chat'}[c];
+    const arr=c==='events'?events:c==='chat'?chat:ledger;
     arr.push({id:uid(),...data}); localWrite(key,arr); renderAll();
   }
   async function remove(c,id){
     if(store.db){ await col(c).doc(id).delete(); return; }
-    const key=c==='events'?'fam-events':'fam-ledger';
+    const key={events:'fam-events',allowance:'fam-ledger',chat:'fam-chat'}[c];
     if(c==='events'){ events=events.filter(e=>e.id!==id); localWrite(key,events); }
+    else if(c==='chat'){ chat=chat.filter(e=>e.id!==id); localWrite(key,chat); }
     else{ ledger=ledger.filter(e=>e.id!==id); localWrite(key,ledger); }
     renderAll();
   }
@@ -494,7 +535,9 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
     $('#view-cal').classList.toggle('on',t==='cal');
     $('#view-money').classList.toggle('on',t==='money');
     $('#view-games').classList.toggle('on',t==='games');
+    $('#view-chat').classList.toggle('on',t==='chat'); if(t==='chat') setTimeout(scrollChat,50);
     $('#fab').style.display=t==='cal'?'':'none';
+    document.querySelector('.app').style.paddingBottom=t==='chat'?'0':'';
     try{localStorage.setItem('fam-tab',t);}catch(e){}
     window.scrollTo(0,0);
   }
@@ -630,7 +673,53 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
     });
   }
 
-  function renderAll(){ renderCal(); renderMoney(); }
+
+  // ---------- 채팅 ----------
+  function scrollChat(){ const l=$('#chat-list'); l.scrollTop=l.scrollHeight; }
+  function fmtTime(ts){ const d=new Date(ts); const h=d.getHours(); return `${h<12?'오전':'오후'} ${h%12||12}:${pad(d.getMinutes())}`; }
+  function renderChat(){
+    const el=$('#chat-list'); const atBottom=el.scrollHeight-el.scrollTop-el.clientHeight<80;
+    el.innerHTML=''; let lastDay='';
+    [...chat].sort((a,b)=>(a.createdAt||0)-(b.createdAt||0)).slice(-300).forEach(m=>{
+      const d=new Date(m.createdAt||0), day=ymd(d);
+      if(day!==lastDay){ lastDay=day; const c=document.createElement('div'); c.className='msg'; c.style.alignSelf='center'; c.innerHTML=`<span class="datechip">${d.getMonth()+1}월 ${d.getDate()}일 ${DOW[d.getDay()]}요일</span>`; el.appendChild(c); }
+      const w=document.createElement('div'); w.className='msg m-'+(m.by||'dad')+(m.by===me?' mine':'');
+      const name=(MEMBERS[m.by]||MEMBERS.dad).n;
+      w.innerHTML=`${m.by!==me?`<div class="nm">${name}</div>`:''}<div class="bub${m.img?' img':''}"></div><div class="meta"><span>${fmtTime(m.createdAt)}</span>${m.by===me?'<button aria-label="삭제">삭제</button>':''}</div>`;
+      const bub=w.querySelector('.bub');
+      if(m.img){ const im=document.createElement('img'); im.src=m.img; im.alt='사진'; im.addEventListener('click',()=>{ $('#img-view img').src=m.img; $('#img-view').classList.add('on'); }); bub.appendChild(im); if(m.text){ const t=document.createElement('div'); t.style.padding='4px 6px 2px'; t.textContent=m.text; bub.appendChild(t); } }
+      else bub.textContent=m.text||'';
+      const del=w.querySelector('.meta button'); if(del) del.addEventListener('click',()=>{ if(confirm('이 메시지를 지울까요?')) remove('chat',m.id).catch(()=>{}); });
+      el.appendChild(w);
+    });
+    if(!chat.length){ el.innerHTML='<div class="empty" style="margin-top:40px">아직 메시지가 없어요. 첫 인사를 남겨 보세요 👋</div>'; }
+    if(atBottom||true) scrollChat();
+  }
+  $('#img-view').addEventListener('click',()=>$('#img-view').classList.remove('on'));
+  async function sendChat(text,img){
+    if(!text&&!img) return;
+    $('#chat-send').disabled=true;
+    try{ await add('chat',{text:text||'',img:img||null,by:me,createdAt:Date.now()}); $('#chat-text').value=''; $('#chat-text').style.height=''; renderChat(); }
+    catch(err){ alert('보내지 못했어요: '+(err.code||err.message)); }
+    $('#chat-send').disabled=false;
+  }
+  $('#chat-send').addEventListener('click',()=>sendChat($('#chat-text').value.trim(),null));
+  $('#chat-text').addEventListener('input',e=>{ e.target.style.height=''; e.target.style.height=Math.min(110,e.target.scrollHeight)+'px'; });
+  $('#chat-photo').addEventListener('click',()=>$('#chat-file').click());
+  $('#chat-file').addEventListener('change',async e=>{
+    const f=e.target.files[0]; e.target.value=''; if(!f) return;
+    $('#status-chat').textContent='사진 줄이는 중…';
+    try{
+      const url=await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(f); });
+      const im=await new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=url; });
+      const MAX=640; let w=im.width,h=im.height; const k=Math.min(1,MAX/Math.max(w,h)); w=Math.round(w*k); h=Math.round(h*k);
+      const c=document.createElement('canvas'); c.width=w; c.height=h; c.getContext('2d').drawImage(im,0,0,w,h);
+      let q=0.7, out=c.toDataURL('image/jpeg',q); while(out.length>180000&&q>0.3){ q-=0.1; out=c.toDataURL('image/jpeg',q); }
+      $('#status-chat').textContent='';
+      await sendChat($('#chat-text').value.trim(),out);
+    }catch(err){ $('#status-chat').textContent='사진을 보내지 못했어요'; }
+  });
+  function renderAll(){ renderCal(); renderMoney(); renderChat(); }
   initStore();
   if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
 })();
