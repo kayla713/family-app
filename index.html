@@ -235,12 +235,13 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
 .ranktable th{font-weight:500;padding:4px 2px 8px;text-align:center}
 .ranktable th:first-child{width:34%}
 .ranktable th .pill{display:inline-block;padding:3px 10px;border-radius:999px;background:var(--c);color:#fff;font-size:12px;font-weight:500}
-.ranktable td{padding:9px 2px 7px;border-top:1px solid var(--line);text-align:center;font-variant-numeric:tabular-nums;position:relative}
+.ranktable td{padding:6px 2px;border-top:1px solid var(--line);text-align:center;vertical-align:middle;font-variant-numeric:tabular-nums}
+.ranktable td .v{display:block;text-align:center;line-height:1.2}
+.ranktable td .cr{display:block;text-align:center;font-size:10px;line-height:1;height:11px}
 .ranktable td:first-child{text-align:left;padding-left:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted)}
 .ranktable td.top{font-weight:700;color:var(--ink)}
-.ranktable td.top::before{content:"👑";font-size:10px;position:absolute;top:1px;left:50%;transform:translateX(-50%);line-height:1}
 .ranktable td.none{color:var(--line)}
-.ranktable td.me{background:color-mix(in srgb,var(--son) 10%,transparent);border-radius:8px}
+.ranktable td.mecol,.ranktable th.mecol{background:color-mix(in srgb,var(--son) 12%,transparent)}
 .rank-foot{display:flex;justify-content:center;gap:14px;margin-top:10px;font-size:12.5px;color:var(--muted)}
 .rank-foot b{color:var(--ink);font-weight:500}
 #mole-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:min(92vw,360px);padding:10px}
@@ -834,7 +835,8 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
     $('#rank-table').innerHTML=Object.keys(GAMES).map(g=>{
       const rows=scores.filter(x=>x.game===g); const top=rows.length?Math.max(...rows.map(r=>Number(r.best)||0)):0;
       return `<tr><td>${GAMES[g]}</td>`+ORD.map(m=>{ const r=rows.find(x=>x.member===m); const v=r?Number(r.best)||0:null; const isTop=v!==null&&v===top&&top>0; if(isTop)crowns[m]++;
-        return `<td class="${v===null?'none':''}${isTop?' top':''}${m===me?' me':''}">${v===null?'–':v.toLocaleString('ko-KR')}</td>`; }).join('')+'</tr>'; }).join('');
+        return `<td class="${v===null?'none':''}${isTop?' top':''}${m===me?' mecol':''}"><span class="cr">${isTop?'👑':''}</span><span class="v">${v===null?'–':v.toLocaleString('ko-KR')}</span></td>`; }).join('')+'</tr>'; }).join('');
+    document.querySelectorAll('.ranktable th').forEach((th,i)=>th.classList.toggle('mecol',i>0&&ORD[i-1]===me));
     const best=Math.max(...Object.values(crowns));
     $('#rank-foot').innerHTML=best>0?ORD.map(m=>`<span>${M[m].n} <b>👑×${crowns[m]}</b></span>`).join(''):'<span>아직 기록이 없어요. 첫 1등이 되어 보세요!</span>';
   }
