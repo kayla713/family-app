@@ -229,20 +229,20 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
 .tile .ico.b{background:#5C6BC0} .tile .ico.p{background:#29B6F6} .tile .ico.m{background:#8D6E63} .tile .ico.j{background:#FF7043} .tile .ico.mt{background:#26A69A}
 .tile .t{font-size:13px;font-weight:500;margin-top:2px;white-space:nowrap}
 .tile .bs{font-size:10.5px;color:var(--muted)} .tile .bs b{color:var(--ink);font-weight:500;font-variant-numeric:tabular-nums}
-.rankbox{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-top:12px}
-.rankhead{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
-.rankhead h3{font-size:15px}
-.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.chips::-webkit-scrollbar{display:none}
-.chips button{flex:none;padding:5px 11px;border-radius:999px;background:var(--paper2);border:1px solid var(--line);font-size:12.5px;white-space:nowrap}
-.chips button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.rank{display:flex;flex-direction:column;gap:6px}
-.rank .row{display:flex;align-items:center;gap:8px;font-size:14px}
-.rank .row .medal{width:22px;text-align:center}
-.rank .row .pill{padding:2px 9px;border-radius:999px;background:var(--c);color:#fff;font-size:12px;font-weight:500}
-.rank .row b{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:500}
-.rank .none{font-size:12.5px;color:var(--muted)}
-.rank .row.me b{color:var(--son)}
+.rankbox{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:12px 10px 10px;margin-top:12px}
+.rankbox h3{font-size:15px;margin:0 4px 8px}
+.ranktable{width:100%;border-collapse:collapse;font-size:13.5px;table-layout:fixed}
+.ranktable th{font-weight:500;padding:4px 2px 8px;text-align:center}
+.ranktable th:first-child{width:34%}
+.ranktable th .pill{display:inline-block;padding:3px 10px;border-radius:999px;background:var(--c);color:#fff;font-size:12px;font-weight:500}
+.ranktable td{padding:7px 2px;border-top:1px solid var(--line);text-align:center;font-variant-numeric:tabular-nums}
+.ranktable td:first-child{text-align:left;padding-left:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted)}
+.ranktable td.top{font-weight:700;color:var(--ink)}
+.ranktable td.top::before{content:"👑 ";font-size:11px}
+.ranktable td.none{color:var(--line)}
+.ranktable td.me{background:color-mix(in srgb,var(--son) 10%,transparent);border-radius:8px}
+.rank-foot{display:flex;justify-content:center;gap:14px;margin-top:10px;font-size:12.5px;color:var(--muted)}
+.rank-foot b{color:var(--ink);font-weight:500}
 #mole-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:min(92vw,360px);padding:10px}
 #mole-grid .hole{aspect-ratio:1;border-radius:50% 50% 45% 45%;background:radial-gradient(ellipse at 50% 70%,#3E2723 0 45%,#5D4037 46% 100%);position:relative;overflow:hidden;touch-action:manipulation;user-select:none;-webkit-user-select:none}
 #mole-grid .hole span{position:absolute;left:50%;bottom:-70%;transform:translateX(-50%);font-size:44px;line-height:1;transition:bottom .12s}
@@ -360,7 +360,7 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
 
     <!-- 게임 탭 -->
     <section class="view" id="view-games">
-      <div class="arcade-head"><h2>오락실</h2><small>게임을 누르면 바로 시작</small></div>
+      <div class="arcade-head"><h2>게임</h2><small>누르면 바로 시작</small></div>
       <div class="tiles">
         <button class="tile" data-game="blocks"><span class="ico b">🧱</span><span class="t">블록 쌓기</span><span class="bs">내 최고 <b id="best-blocks">0</b></span></button>
         <button class="tile" data-game="plane"><span class="ico p">✈️</span><span class="t">비행기 슈팅</span><span class="bs">내 최고 <b id="best-plane">0</b></span></button>
@@ -369,8 +369,9 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
         <button class="tile" data-game="math"><span class="ico mt">🧮</span><span class="t">암산 대결</span><span class="bs">내 최고 <b id="best-math">0</b></span></button>
       </div>
       <div class="rankbox">
-        <div class="rankhead"><h3>🏆 가족 랭킹</h3><div class="chips" id="rank-chips"></div></div>
-        <div class="rank" id="rank-view"></div>
+        <h3>🏆 가족 랭킹</h3>
+        <table class="ranktable"><thead><tr><th></th><th class="m-dad"><span class="pill">아빠</span></th><th class="m-mom"><span class="pill">엄마</span></th><th class="m-son"><span class="pill">재빈</span></th></tr></thead><tbody id="rank-table"></tbody></table>
+        <div class="rank-foot" id="rank-foot"></div>
       </div>
     </section>
 
@@ -399,7 +400,7 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
         <svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="3"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg>용돈
       </button>
       <button data-tab="games">
-        <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="11" rx="4"/><path d="M7 11v3M5.5 12.5h3M15.5 11.5h.01M18 13.5h.01"/></svg>오락실
+        <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="11" rx="4"/><path d="M7 11v3M5.5 12.5h3M15.5 11.5h.01M18 13.5h.01"/></svg>게임
       </button>
       <button data-tab="chat">
         <svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg>채팅<span class="badge" id="chat-badge" hidden></span>
@@ -792,7 +793,7 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
   function toast(text,onClick){ const t=document.createElement('div'); t.className='toast'; t.textContent=text; if(onClick) t.addEventListener('click',()=>{onClick();t.remove();}); document.body.appendChild(t); setTimeout(()=>t.remove(),4500); }
   $('#chat-bell').addEventListener('click',()=>setupPush(true));
   // 내가 바뀌면 토큰 주인도 갱신
-  const _setMe=setMe; setMe=function(m){ _setMe(m); if(Notification.permission==='granted') setupPush(false); };
+  const _setMe=setMe; setMe=function(m){ _setMe(m); if(Notification.permission==='granted') setupPush(false); if(window.refreshRank) window.refreshRank(); };
   function renderAll(){ renderCal(); renderMoney(); renderChat(); }
   initStore();
   if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').then(r=>{swReg=r;}).catch(()=>{}); }
@@ -825,20 +826,21 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
   function over(kind,score){ openWithRank(kind); saveBest(kind,score); $('#g-msg-score').textContent=score.toLocaleString('ko-KR')+'점'; msg.hidden=false;
     if(window.FAM){ window.FAM.saveScore(kind,window.FAM.me(),score).catch(()=>{}); } renderRank(lastScores); }
   const GAMES={blocks:'블록 쌓기',plane:'비행기 슈팅',mole:'두더지 잡기',jump:'점프 게임',math:'암산 대결'};
-  let rankGame='blocks', lastScores=[]; try{ rankGame=localStorage.getItem('fam-rank-game')||'blocks'; }catch(e){}
-  $('#rank-chips').innerHTML=Object.keys(GAMES).map(g=>`<button data-g="${g}">${GAMES[g]}</button>`).join('');
-  $('#rank-chips').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ rankGame=b.dataset.g; try{localStorage.setItem('fam-rank-game',rankGame);}catch(e){} renderRank(lastScores); }));
+  let lastScores=[];
   function renderRank(scores){
     lastScores=scores; if(!window.FAM) return;
-    $('#rank-chips').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.g===rankGame));
-    const M=window.FAM.members, me=window.FAM.me(); const el=$('#rank-view');
-    const rows=scores.filter(x=>x.game===rankGame).sort((a,b)=>b.best-a.best);
-    if(!rows.length){ el.innerHTML='<div class="none">아직 기록이 없어요. 첫 1등이 되어 보세요!</div>'; return; }
-    const medals=['🥇','🥈','🥉'];
-    el.innerHTML=rows.map((r,i)=>`<div class="row${r.member===me?' me':''}"><span class="medal">${medals[i]||(i+1)}</span><span class="pill m-${r.member}">${(M[r.member]||{n:'?'}).n}</span><b>${Number(r.best).toLocaleString('ko-KR')}점</b></div>`).join('');
+    const me=window.FAM.me(), ORD=window.FAM.order, M=window.FAM.members;
+    const crowns={dad:0,mom:0,son:0};
+    $('#rank-table').innerHTML=Object.keys(GAMES).map(g=>{
+      const rows=scores.filter(x=>x.game===g); const top=rows.length?Math.max(...rows.map(r=>Number(r.best)||0)):0;
+      return `<tr><td>${GAMES[g]}</td>`+ORD.map(m=>{ const r=rows.find(x=>x.member===m); const v=r?Number(r.best)||0:null; const isTop=v!==null&&v===top&&top>0; if(isTop)crowns[m]++;
+        return `<td class="${v===null?'none':''}${isTop?' top':''}${m===me?' me':''}">${v===null?'–':v.toLocaleString('ko-KR')}</td>`; }).join('')+'</tr>'; }).join('');
+    const best=Math.max(...Object.values(crowns));
+    $('#rank-foot').innerHTML=best>0?ORD.map(m=>`<span>${M[m].n} <b>👑×${crowns[m]}</b></span>`).join(''):'<span>아직 기록이 없어요. 첫 1등이 되어 보세요!</span>';
   }
-  function openWithRank(kind){ rankGame=kind; try{localStorage.setItem('fam-rank-game',kind);}catch(e){} }
+  function openWithRank(kind){}
   if(window.FAM) window.FAM.onScores(renderRank);
+  window.refreshRank=()=>renderRank(lastScores);
   new MutationObserver(()=>{ scoreEl.classList.add('pop'); setTimeout(()=>scoreEl.classList.remove('pop'),130); }).observe(scoreEl,{childList:true,characterData:true,subtree:true});
   function fit(w,h){ const box=$('#g-box'); const W=box.clientWidth, H=box.clientHeight; const s=Math.min(W/w,H/h); cv.width=w; cv.height=h; cv.style.width=w*s+'px'; cv.style.height=h*s+'px'; }
 
