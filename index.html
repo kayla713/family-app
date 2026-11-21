@@ -226,7 +226,7 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
 .tile{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:12px 6px 10px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
 .tile:active{transform:scale(.97)}
 .tile .ico{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:24px;color:#fff}
-.tile .ico.b{background:#5C6BC0} .tile .ico.p{background:#29B6F6} .tile .ico.m{background:#8D6E63} .tile .ico.j{background:#FF7043} .tile .ico.mt{background:#26A69A}
+.tile .ico.b{background:#5C6BC0} .tile .ico.p{background:#29B6F6} .tile .ico.m{background:#8D6E63} .tile .ico.j{background:#FF7043} .tile .ico.mt{background:#26A69A} .tile .ico.sd{background:#5E35B1}
 .tile .t{font-size:13px;font-weight:500;margin-top:2px;white-space:nowrap}
 .tile .bs{font-size:10.5px;color:var(--muted)} .tile .bs b{color:var(--ink);font-weight:500;font-variant-numeric:tabular-nums}
 .rankbox{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:12px 10px 10px;margin-top:12px}
@@ -257,6 +257,21 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
 #math-box .mopt{height:68px;border-radius:16px;background:rgba(255,255,255,.14);font-size:28px;font-weight:600;font-variant-numeric:tabular-nums;touch-action:manipulation;user-select:none;-webkit-user-select:none;transition:background .1s}
 #math-box .mopt:active{background:rgba(255,255,255,.3)}
 #math-box .mopt.ok{background:#2E7D32} #math-box .mopt.bad{background:#C62828}
+#sudoku-box{width:min(92vw,340px);display:flex;flex-direction:column;align-items:center;gap:12px;position:relative;padding:6px}
+#sudoku-box .slabel{font-size:13px;opacity:.7}
+#sudoku-box .sgrid{display:grid;gap:0;border:3px solid #fff;border-radius:8px;overflow:hidden;background:#fff;width:100%}
+#sudoku-box .sgrid.n4 .scell{height:66px;font-size:28px} #sudoku-box .sgrid.n6 .scell{height:48px;font-size:22px}
+#sudoku-box .scell{background:#1B232E;color:#4FC3F7;font-weight:600;border:1px solid rgba(255,255,255,.15);display:grid;place-items:center;touch-action:manipulation;user-select:none;-webkit-user-select:none;transition:background .1s}
+#sudoku-box .scell.given{color:#fff;background:#0F151D}
+#sudoku-box .scell.sel{background:#1E88E5;color:#fff}
+#sudoku-box .scell.bad{color:#FF5252}
+#sudoku-box .scell.br{border-right:3px solid #fff} #sudoku-box .scell.bb{border-bottom:3px solid #fff}
+#sudoku-box .sgrid.done .scell{background:#2E7D32;color:#fff}
+#sudoku-box .spad{display:flex;gap:6px;width:100%;justify-content:center;flex-wrap:wrap}
+#sudoku-box .spad button{width:44px;height:48px;border-radius:12px;background:rgba(255,255,255,.14);font-size:22px;font-weight:600;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+#sudoku-box .spad button.erase{background:rgba(255,82,82,.3);font-size:18px}
+#sudoku-box .spad button:active{background:rgba(255,255,255,.3)}
+#sudoku-box .mflash{position:absolute;top:30%;left:50%;transform:translateX(-50%);font-size:30px;font-weight:800;animation:floatUp .7s ease-out forwards;pointer-events:none;z-index:2}
 #math-box .mflash{position:absolute;top:50px;left:50%;transform:translateX(-50%);font-size:26px;font-weight:800;animation:floatUp .6s ease-out forwards;pointer-events:none}
 .float{position:absolute;left:50%;top:40%;transform:translateX(-50%);font-weight:700;font-size:22px;pointer-events:none;animation:floatUp .7s ease-out forwards;text-shadow:0 2px 6px rgba(0,0,0,.5);z-index:2}
 .float.plus{color:#FFEB3B} .float.gold{color:#FFC107;font-size:26px} .float.minus{color:#FF5252}
@@ -368,6 +383,7 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
         <button class="tile" data-game="mole"><span class="ico m">🐹</span><span class="t">두더지 잡기</span><span class="bs">내 최고 <b id="best-mole">0</b></span></button>
         <button class="tile" data-game="jump"><span class="ico j">🦖</span><span class="t">점프 게임</span><span class="bs">내 최고 <b id="best-jump">0</b></span></button>
         <button class="tile" data-game="math"><span class="ico mt">🧮</span><span class="t">암산 대결</span><span class="bs">내 최고 <b id="best-math">0</b></span></button>
+        <button class="tile" data-game="sudoku"><span class="ico sd">🔢</span><span class="t">스도쿠 미니</span><span class="bs">내 최고 <b id="best-sudoku">0</b></span></button>
       </div>
       <div class="rankbox">
         <h3>🏆 가족 랭킹</h3>
@@ -805,18 +821,18 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
   const $=s=>document.querySelector(s);
   const ov=$('#game-ov'), cv=$('#gcv'), ctx=cv.getContext('2d');
   const scoreEl=$('#g-score'), bestEl=$('#g-best'), titleEl=$('#g-title'), ctl=$('#g-ctl'), msg=$('#g-msg');
-  let raf=0, game=null, best={blocks:0,plane:0,mole:0,jump:0,math:0};
+  let raf=0, game=null, best={blocks:0,plane:0,mole:0,jump:0,math:0,sudoku:0};
   try{ best=Object.assign(best,JSON.parse(localStorage.getItem('fam-best')||'{}')); }catch(e){}
   function saveBest(k,v){ if(v>best[k]){ best[k]=v; try{localStorage.setItem('fam-best',JSON.stringify(best));}catch(e){} } bestEl.textContent=best[k].toLocaleString('ko-KR'); $('#best-'+k).textContent=best[k].toLocaleString('ko-KR'); }
   function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
   function open(kind){
     ov.classList.add('on'); document.body.style.overflow='hidden';
-    titleEl.textContent={blocks:'블록 쌓기',plane:'비행기 슈팅',mole:'두더지 잡기',jump:'점프 게임',math:'암산 대결'}[kind];
-    cv.style.display=(kind==='mole'||kind==='math')?'none':'';
+    titleEl.textContent={blocks:'블록 쌓기',plane:'비행기 슈팅',mole:'두더지 잡기',jump:'점프 게임',math:'암산 대결',sudoku:'스도쿠 미니'}[kind];
+    cv.style.display=(kind==='mole'||kind==='math'||kind==='sudoku')?'none':'';
     bestEl.textContent=best[kind].toLocaleString('ko-KR');
     msg.hidden=true;
     cancelAnimationFrame(raf);
-    game=kind==='blocks'?Blocks():kind==='plane'?Plane():kind==='mole'?Mole():kind==='jump'?Jump():MathGame();
+    game=kind==='blocks'?Blocks():kind==='plane'?Plane():kind==='mole'?Mole():kind==='jump'?Jump():kind==='math'?MathGame():Sudoku();
     game.start();
   }
   function close(){ ov.classList.remove('on'); document.body.style.overflow=''; cancelAnimationFrame(raf); if(game&&game.stop)game.stop(); game=null; }
@@ -826,7 +842,7 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
   Object.keys(best).forEach(k=>{ const e=$('#best-'+k); if(e)e.textContent=best[k].toLocaleString('ko-KR'); });
   function over(kind,score){ openWithRank(kind); saveBest(kind,score); $('#g-msg-score').textContent=score.toLocaleString('ko-KR')+'점'; msg.hidden=false;
     if(window.FAM){ window.FAM.saveScore(kind,window.FAM.me(),score).catch(()=>{}); } renderRank(lastScores); }
-  const GAMES={blocks:'블록 쌓기',plane:'비행기 슈팅',mole:'두더지 잡기',jump:'점프 게임',math:'암산 대결'};
+  const GAMES={blocks:'블록 쌓기',plane:'비행기 슈팅',mole:'두더지 잡기',jump:'점프 게임',math:'암산 대결',sudoku:'스도쿠 미니'};
   let lastScores=[];
   function renderRank(scores){
     lastScores=scores; if(!window.FAM) return;
@@ -970,6 +986,36 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
         el.querySelectorAll('.mopt').forEach(b=>b.addEventListener('pointerdown',e=>{e.preventDefault();pick(b);}));
         box.insertBefore(el,msg); make();
         tick=setInterval(()=>{ left--; $('#g-time').textContent=left; if(left<=0){ dead=true; clearInterval(tick); over('math',score); } },1000); },
+      stop(){ dead=true; clearInterval(tick); clearTimeout(lockT); if(el){el.remove();el=null;} }
+    };
+  }
+  // ===== 스도쿠 미니 =====
+  function Sudoku(){
+    const box=$('#g-box'); let el, N, BR, BC, sol, giv, cur, sel, left, score, solved, dead, tick, lockT;
+    ctl.innerHTML='<div class="g-hint">가로·세로·굵은 칸 안에 같은 숫자가 없게 채워요 · 3분 안에 많이 풀수록 높은 점수</div><div class="g-time" id="g-time">3:00</div>';
+    const shuffle=a=>{ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+    function ok(g,r,c,v){ for(let i=0;i<N;i++){ if(g[r*N+i]===v||g[i*N+c]===v) return false; } const r0=r-r%BR,c0=c-c%BC; for(let i=0;i<BR;i++)for(let j=0;j<BC;j++){ if(g[(r0+i)*N+c0+j]===v) return false; } return true; }
+    function fill(g,i){ if(i===N*N) return true; if(g[i]) return fill(g,i+1); const r=Math.floor(i/N),c=i%N; for(const v of shuffle([...Array(N)].map((_,k)=>k+1))){ if(ok(g,r,c,v)){ g[i]=v; if(fill(g,i+1)) return true; g[i]=0; } } return false; }
+    function count(g,i,lim){ if(i===N*N) return 1; if(g[i]) return count(g,i+1,lim); const r=Math.floor(i/N),c=i%N; let n=0; for(let v=1;v<=N;v++){ if(ok(g,r,c,v)){ g[i]=v; n+=count(g,i+1,lim); g[i]=0; if(n>=lim) return n; } } return n; }
+    function gen(){ N=solved<2?4:6; BR=2; BC=N===4?2:3; sol=Array(N*N).fill(0); fill(sol,0); giv=sol.slice();
+      const keep=N===4?6:14; const idx=shuffle([...Array(N*N).keys()]); let removed=0;
+      for(const i of idx){ if(N*N-removed<=keep) break; const bk=giv[i]; giv[i]=0; if(count(giv.slice(),0,2)!==1){ giv[i]=bk; } else removed++; }
+      cur=giv.slice(); sel=-1; render(); }
+    function render(){ const grid=el.querySelector('.sgrid'); grid.style.gridTemplateColumns=`repeat(${N},1fr)`; grid.className='sgrid n'+N;
+      grid.innerHTML=cur.map((v,i)=>{ const r=Math.floor(i/N),c=i%N; const cls=['scell',giv[i]?'given':'',i===sel?'sel':'',(c%BC===BC-1&&c<N-1)?'br':'',(r%BR===BR-1&&r<N-1)?'bb':'',(v&&!giv[i]&&v!==sol[i])?'bad':''].filter(Boolean).join(' '); return `<button class="${cls}" data-i="${i}">${v||''}</button>`; }).join('');
+      grid.querySelectorAll('.scell').forEach(b=>b.addEventListener('pointerdown',e=>{ e.preventDefault(); const i=Number(b.dataset.i); if(giv[i]) return; sel=i; render(); }));
+      const pad=el.querySelector('.spad'); pad.innerHTML=[...Array(N)].map((_,k)=>`<button data-v="${k+1}">${k+1}</button>`).join('')+'<button data-v="0" class="erase">⌫</button>';
+      pad.querySelectorAll('button').forEach(b=>b.addEventListener('pointerdown',e=>{ e.preventDefault(); put(Number(b.dataset.v)); }));
+      el.querySelector('.slabel').textContent=`${N}×${N} · ${solved+1}번째 판`; }
+    function put(v){ if(dead||lockT||sel<0||giv[sel]) return; cur[sel]=v;
+      if(v&&v!==sol[sel]){ score=Math.max(0,score-10); scoreEl.textContent=score; if(navigator.vibrate)navigator.vibrate(50); }
+      render();
+      if(cur.every((x,i)=>x===sol[i])){ const pts=N===4?100:250; score+=pts; scoreEl.textContent=score; solved++; el.querySelector('.sgrid').classList.add('done'); const f=document.createElement('div'); f.className='mflash'; f.textContent='+'+pts+' 🎉'; f.style.color='#69F0AE'; el.appendChild(f); setTimeout(()=>f.remove(),700); lockT=setTimeout(()=>{ lockT=null; gen(); },900); } }
+    const fmt=t=>`${Math.floor(t/60)}:${String(t%60).padStart(2,'0')}`;
+    return {
+      start(){ dead=false; left=180; score=0; solved=0; lockT=null; scoreEl.textContent='0'; $('#g-time').textContent=fmt(left); clearInterval(tick);
+        if(el)el.remove(); el=document.createElement('div'); el.id='sudoku-box'; el.innerHTML='<div class="slabel"></div><div class="sgrid"></div><div class="spad"></div>'; box.insertBefore(el,msg); gen();
+        tick=setInterval(()=>{ left--; $('#g-time').textContent=fmt(left); if(left<=0){ dead=true; clearInterval(tick); over('sudoku',score); } },1000); },
       stop(){ dead=true; clearInterval(tick); clearTimeout(lockT); if(el){el.remove();el=null;} }
     };
   }
