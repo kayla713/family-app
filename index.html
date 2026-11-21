@@ -220,17 +220,29 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
 #img-view.on{display:grid}
 #img-view img{max-width:96vw;max-height:90vh;border-radius:8px}
 /* ---- games ---- */
-.gcard{display:flex;align-items:center;gap:14px;background:var(--paper);border:1px solid var(--line);border-radius:18px 18px 0 0;padding:14px;text-align:left;width:100%}
-.rank{background:var(--paper2);border:1px solid var(--line);border-top:0;border-radius:0 0 18px 18px;padding:8px 14px 10px;margin-bottom:12px;display:flex;flex-direction:column;gap:5px}
+.arcade-head{display:flex;align-items:baseline;gap:10px;margin:2px 4px 10px}
+.arcade-head h2{font-size:22px} .arcade-head small{color:var(--muted);font-size:12.5px}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tile{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:12px 6px 10px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
+.tile:active{transform:scale(.97)}
+.tile .ico{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:24px;color:#fff}
+.tile .ico.b{background:#5C6BC0} .tile .ico.p{background:#29B6F6} .tile .ico.m{background:#8D6E63} .tile .ico.j{background:#FF7043} .tile .ico.bl{background:#AB47BC}
+.tile .t{font-size:13px;font-weight:500;margin-top:2px;white-space:nowrap}
+.tile .bs{font-size:10.5px;color:var(--muted)} .tile .bs b{color:var(--ink);font-weight:500;font-variant-numeric:tabular-nums}
+.rankbox{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-top:12px}
+.rankhead{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.rankhead h3{font-size:15px}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.chips::-webkit-scrollbar{display:none}
+.chips button{flex:none;padding:5px 11px;border-radius:999px;background:var(--paper2);border:1px solid var(--line);font-size:12.5px;white-space:nowrap}
+.chips button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.rank{display:flex;flex-direction:column;gap:6px}
 .rank .row{display:flex;align-items:center;gap:8px;font-size:14px}
 .rank .row .medal{width:22px;text-align:center}
 .rank .row .pill{padding:2px 9px;border-radius:999px;background:var(--c);color:#fff;font-size:12px;font-weight:500}
 .rank .row b{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:500}
 .rank .none{font-size:12.5px;color:var(--muted)}
 .rank .row.me b{color:var(--son)}
-.gcard .ico{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;font-size:28px;flex:none;color:#fff}
-.gcard .ico.b{background:#5C6BC0} .gcard .ico.p{background:#29B6F6} .gcard .ico.m{background:#8D6E63}
-.gcard .ico.j{background:#FF7043} .gcard .ico.bl{background:#AB47BC}
 #mole-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:min(92vw,360px);padding:10px}
 #mole-grid .hole{aspect-ratio:1;border-radius:50% 50% 45% 45%;background:radial-gradient(ellipse at 50% 70%,#3E2723 0 45%,#5D4037 46% 100%);position:relative;overflow:hidden;touch-action:manipulation;user-select:none;-webkit-user-select:none}
 #mole-grid .hole span{position:absolute;left:50%;bottom:-70%;transform:translateX(-50%);font-size:44px;line-height:1;transition:bottom .12s}
@@ -240,10 +252,6 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
 .float{position:absolute;left:50%;top:40%;transform:translateX(-50%);font-weight:700;font-size:22px;pointer-events:none;animation:floatUp .7s ease-out forwards;text-shadow:0 2px 6px rgba(0,0,0,.5);z-index:2}
 .float.plus{color:#FFEB3B} .float.gold{color:#FFC107;font-size:26px} .float.minus{color:#FF5252}
 @keyframes floatUp{0%{opacity:1;top:40%}100%{opacity:0;top:-30%}}
-.gcard .t{font-size:17px;font-weight:500}
-.gcard .d{font-size:13px;color:var(--muted)}
-.gcard .best{margin-left:auto;text-align:right;font-size:12px;color:var(--muted);flex:none}
-.gcard .best b{display:block;font-size:16px;color:var(--ink);font-variant-numeric:tabular-nums}
 .gov{position:fixed;inset:0;background:#0A0F18;color:#fff;z-index:30;display:none;flex-direction:column;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
 .gov.on{display:flex}
 .gov .top{display:flex;align-items:center;gap:12px;padding:10px 14px;font-size:14px}
@@ -344,16 +352,18 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
 
     <!-- 게임 탭 -->
     <section class="view" id="view-games">
-      <button class="gcard" data-game="blocks"><div class="ico b">🧱</div><div><div class="t">블록 쌓기</div><div class="d">줄을 채워 없애요. 좌우 스와이프, 탭으로 회전</div></div><div class="best">내 최고<b id="best-blocks">0</b></div></button>
-      <div class="rank" id="rank-blocks"></div>
-      <button class="gcard" data-game="plane"><div class="ico p">✈️</div><div><div class="t">비행기 슈팅</div><div class="d">드래그로 피하고 적을 맞혀요</div></div><div class="best">내 최고<b id="best-plane">0</b></div></button>
-      <div class="rank" id="rank-plane"></div>
-      <button class="gcard" data-game="mole"><div class="ico m">🐹</div><div><div class="t">두더지 잡기</div><div class="d">30초 동안 튀어나오는 두더지를 톡톡! 폭탄은 피해요</div></div><div class="best">내 최고<b id="best-mole">0</b></div></button>
-      <div class="rank" id="rank-mole"></div>
-      <button class="gcard" data-game="jump"><div class="ico j">🦖</div><div><div class="t">점프 게임</div><div class="d">화면을 톡 쳐서 장애물을 뛰어넘어요. 동전 🪙은 보너스</div></div><div class="best">내 최고<b id="best-jump">0</b></div></button>
-      <div class="rank" id="rank-jump"></div>
-      <button class="gcard" data-game="balloon"><div class="ico bl">🎈</div><div><div class="t">풍선 터뜨리기</div><div class="d">45초 동안 올라오는 풍선을 톡톡! 벌 🐝은 피해요</div></div><div class="best">내 최고<b id="best-balloon">0</b></div></button>
-      <div class="rank" id="rank-balloon"></div>
+      <div class="arcade-head"><h2>오락실</h2><small>게임을 누르면 바로 시작</small></div>
+      <div class="tiles">
+        <button class="tile" data-game="blocks"><span class="ico b">🧱</span><span class="t">블록 쌓기</span><span class="bs">내 최고 <b id="best-blocks">0</b></span></button>
+        <button class="tile" data-game="plane"><span class="ico p">✈️</span><span class="t">비행기 슈팅</span><span class="bs">내 최고 <b id="best-plane">0</b></span></button>
+        <button class="tile" data-game="mole"><span class="ico m">🐹</span><span class="t">두더지 잡기</span><span class="bs">내 최고 <b id="best-mole">0</b></span></button>
+        <button class="tile" data-game="jump"><span class="ico j">🦖</span><span class="t">점프 게임</span><span class="bs">내 최고 <b id="best-jump">0</b></span></button>
+        <button class="tile" data-game="balloon"><span class="ico bl">🎈</span><span class="t">풍선 터뜨리기</span><span class="bs">내 최고 <b id="best-balloon">0</b></span></button>
+      </div>
+      <div class="rankbox">
+        <div class="rankhead"><h3>🏆 가족 랭킹</h3><div class="chips" id="rank-chips"></div></div>
+        <div class="rank" id="rank-view"></div>
+      </div>
     </section>
 
     <!-- 채팅 -->
@@ -804,19 +814,22 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
   $('#g-again').addEventListener('click',()=>{ msg.hidden=true; if(game){ cancelAnimationFrame(raf); game.start(); } });
   document.querySelectorAll('[data-game]').forEach(b=>b.addEventListener('click',()=>open(b.dataset.game)));
   Object.keys(best).forEach(k=>{ const e=$('#best-'+k); if(e)e.textContent=best[k].toLocaleString('ko-KR'); });
-  function over(kind,score){ saveBest(kind,score); $('#g-msg-score').textContent=score.toLocaleString('ko-KR')+'점'; msg.hidden=false;
-    if(window.FAM){ window.FAM.saveScore(kind,window.FAM.me(),score).catch(()=>{}); } }
+  function over(kind,score){ openWithRank(kind); saveBest(kind,score); $('#g-msg-score').textContent=score.toLocaleString('ko-KR')+'점'; msg.hidden=false;
+    if(window.FAM){ window.FAM.saveScore(kind,window.FAM.me(),score).catch(()=>{}); } renderRank(lastScores); }
+  const GAMES={blocks:'블록 쌓기',plane:'비행기 슈팅',mole:'두더지 잡기',jump:'점프 게임',balloon:'풍선 터뜨리기'};
+  let rankGame='blocks', lastScores=[]; try{ rankGame=localStorage.getItem('fam-rank-game')||'blocks'; }catch(e){}
+  $('#rank-chips').innerHTML=Object.keys(GAMES).map(g=>`<button data-g="${g}">${GAMES[g]}</button>`).join('');
+  $('#rank-chips').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ rankGame=b.dataset.g; try{localStorage.setItem('fam-rank-game',rankGame);}catch(e){} renderRank(lastScores); }));
   function renderRank(scores){
-    if(!window.FAM) return;
-    const M=window.FAM.members, me=window.FAM.me();
-    ['blocks','plane','mole','jump','balloon'].forEach(g=>{
-      const el=$('#rank-'+g); if(!el) return;
-      const rows=scores.filter(x=>x.game===g).sort((a,b)=>b.best-a.best);
-      if(!rows.length){ el.innerHTML='<div class="none">아직 기록이 없어요. 첫 1등이 되어 보세요!</div>'; return; }
-      const medals=['🥇','🥈','🥉'];
-      el.innerHTML=rows.map((r,i)=>`<div class="row${r.member===me?' me':''}"><span class="medal">${medals[i]||(i+1)}</span><span class="pill m-${r.member}">${(M[r.member]||{n:'?'}).n}</span><b>${Number(r.best).toLocaleString('ko-KR')}점</b></div>`).join('');
-    });
+    lastScores=scores; if(!window.FAM) return;
+    $('#rank-chips').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.g===rankGame));
+    const M=window.FAM.members, me=window.FAM.me(); const el=$('#rank-view');
+    const rows=scores.filter(x=>x.game===rankGame).sort((a,b)=>b.best-a.best);
+    if(!rows.length){ el.innerHTML='<div class="none">아직 기록이 없어요. 첫 1등이 되어 보세요!</div>'; return; }
+    const medals=['🥇','🥈','🥉'];
+    el.innerHTML=rows.map((r,i)=>`<div class="row${r.member===me?' me':''}"><span class="medal">${medals[i]||(i+1)}</span><span class="pill m-${r.member}">${(M[r.member]||{n:'?'}).n}</span><b>${Number(r.best).toLocaleString('ko-KR')}점</b></div>`).join('');
   }
+  function openWithRank(kind){ rankGame=kind; try{localStorage.setItem('fam-rank-game',kind);}catch(e){} }
   if(window.FAM) window.FAM.onScores(renderRank);
   new MutationObserver(()=>{ scoreEl.classList.add('pop'); setTimeout(()=>scoreEl.classList.remove('pop'),130); }).observe(scoreEl,{childList:true,characterData:true,subtree:true});
   function fit(w,h){ const box=$('#g-box'); const W=box.clientWidth, H=box.clientHeight; const s=Math.min(W/w,H/h); cv.width=w; cv.height=h; cv.style.width=w*s+'px'; cv.style.height=h*s+'px'; }
