@@ -257,21 +257,16 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
 #math-box .mopt{height:68px;border-radius:16px;background:rgba(255,255,255,.14);font-size:28px;font-weight:600;font-variant-numeric:tabular-nums;touch-action:manipulation;user-select:none;-webkit-user-select:none;transition:background .1s}
 #math-box .mopt:active{background:rgba(255,255,255,.3)}
 #math-box .mopt.ok{background:#2E7D32} #math-box .mopt.bad{background:#C62828}
-#sudoku-box{width:min(92vw,340px);display:flex;flex-direction:column;align-items:center;gap:12px;position:relative;padding:6px}
-#sudoku-box .slabel{font-size:13px;opacity:.7}
-#sudoku-box .sgrid{display:grid;gap:0;border:3px solid #fff;border-radius:8px;overflow:hidden;background:#fff;width:100%}
-#sudoku-box .sgrid.n4 .scell{height:66px;font-size:28px} #sudoku-box .sgrid.n6 .scell{height:48px;font-size:22px}
-#sudoku-box .scell{background:#1B232E;color:#4FC3F7;font-weight:600;border:1px solid rgba(255,255,255,.15);display:grid;place-items:center;touch-action:manipulation;user-select:none;-webkit-user-select:none;transition:background .1s}
-#sudoku-box .scell.given{color:#fff;background:#0F151D}
-#sudoku-box .scell.sel{background:#1E88E5;color:#fff}
-#sudoku-box .scell.bad{color:#FF5252}
-#sudoku-box .scell.br{border-right:3px solid #fff} #sudoku-box .scell.bb{border-bottom:3px solid #fff}
-#sudoku-box .sgrid.done .scell{background:#2E7D32;color:#fff}
-#sudoku-box .spad{display:flex;gap:6px;width:100%;justify-content:center;flex-wrap:wrap}
-#sudoku-box .spad button{width:44px;height:48px;border-radius:12px;background:rgba(255,255,255,.14);font-size:22px;font-weight:600;touch-action:manipulation;user-select:none;-webkit-user-select:none}
-#sudoku-box .spad button.erase{background:rgba(255,82,82,.3);font-size:18px}
-#sudoku-box .spad button:active{background:rgba(255,255,255,.3)}
-#sudoku-box .mflash{position:absolute;top:30%;left:50%;transform:translateX(-50%);font-size:30px;font-weight:800;animation:floatUp .7s ease-out forwards;pointer-events:none;z-index:2}
+#box2048{width:min(88vw,330px);display:flex;flex-direction:column;align-items:center;gap:10px;position:relative;touch-action:none}
+#box2048 .l2048{font-size:13px;opacity:.75;height:18px}
+#box2048 .grid2048{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:#BBADA0;padding:8px;border-radius:12px;width:100%}
+#box2048 .c2048{aspect-ratio:1;border-radius:8px;background:rgba(238,228,218,.35);display:grid;place-items:center;font-weight:800;font-variant-numeric:tabular-nums;transition:transform .1s}
+#box2048 .c2048.new{animation:pop2048 .18s ease-out}
+@keyframes pop2048{0%{transform:scale(.4)}100%{transform:scale(1)}}
+#box2048 .mflash{position:absolute;top:0;left:50%;transform:translateX(-50%);font-size:24px;font-weight:800;animation:floatUp .6s ease-out forwards;pointer-events:none;z-index:2}
+.dpad.small{grid-template-columns:52px 52px 52px;grid-template-rows:46px 46px;gap:4px}
+.dpad.small button{border-radius:12px;background:rgba(255,255,255,.14);font-size:20px;touch-action:none;user-select:none;-webkit-user-select:none;width:auto;height:auto}
+.dpad.small .up{grid-area:up;background:rgba(255,255,255,.14)} .dpad.small .left{grid-area:left} .dpad.small .down{grid-area:down} .dpad.small .right{grid-area:right}
 #math-box .mflash{position:absolute;top:50px;left:50%;transform:translateX(-50%);font-size:26px;font-weight:800;animation:floatUp .6s ease-out forwards;pointer-events:none}
 .float{position:absolute;left:50%;top:40%;transform:translateX(-50%);font-weight:700;font-size:22px;pointer-events:none;animation:floatUp .7s ease-out forwards;text-shadow:0 2px 6px rgba(0,0,0,.5);z-index:2}
 .float.plus{color:#FFEB3B} .float.gold{color:#FFC107;font-size:26px} .float.minus{color:#FF5252}
@@ -383,7 +378,7 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
         <button class="tile" data-game="mole"><span class="ico m">🐹</span><span class="t">두더지 잡기</span><span class="bs">내 최고 <b id="best-mole">0</b></span></button>
         <button class="tile" data-game="jump"><span class="ico j">🦖</span><span class="t">점프 게임</span><span class="bs">내 최고 <b id="best-jump">0</b></span></button>
         <button class="tile" data-game="math"><span class="ico mt">🧮</span><span class="t">암산 대결</span><span class="bs">내 최고 <b id="best-math">0</b></span></button>
-        <button class="tile" data-game="sudoku"><span class="ico sd">🔢</span><span class="t">스도쿠 미니</span><span class="bs">내 최고 <b id="best-sudoku">0</b></span></button>
+        <button class="tile" data-game="g2048"><span class="ico sd">🔢</span><span class="t">2048</span><span class="bs">내 최고 <b id="best-g2048">0</b></span></button>
       </div>
       <div class="rankbox">
         <h3>🏆 가족 랭킹</h3>
@@ -821,18 +816,18 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
   const $=s=>document.querySelector(s);
   const ov=$('#game-ov'), cv=$('#gcv'), ctx=cv.getContext('2d');
   const scoreEl=$('#g-score'), bestEl=$('#g-best'), titleEl=$('#g-title'), ctl=$('#g-ctl'), msg=$('#g-msg');
-  let raf=0, game=null, best={blocks:0,plane:0,mole:0,jump:0,math:0,sudoku:0};
+  let raf=0, game=null, best={blocks:0,plane:0,mole:0,jump:0,math:0,g2048:0};
   try{ best=Object.assign(best,JSON.parse(localStorage.getItem('fam-best')||'{}')); }catch(e){}
   function saveBest(k,v){ if(v>best[k]){ best[k]=v; try{localStorage.setItem('fam-best',JSON.stringify(best));}catch(e){} } bestEl.textContent=best[k].toLocaleString('ko-KR'); $('#best-'+k).textContent=best[k].toLocaleString('ko-KR'); }
   function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
   function open(kind){
     ov.classList.add('on'); document.body.style.overflow='hidden';
-    titleEl.textContent={blocks:'블록 쌓기',plane:'비행기 슈팅',mole:'두더지 잡기',jump:'점프 게임',math:'암산 대결',sudoku:'스도쿠 미니'}[kind];
-    cv.style.display=(kind==='mole'||kind==='math'||kind==='sudoku')?'none':'';
+    titleEl.textContent={blocks:'블록 쌓기',plane:'비행기 슈팅',mole:'두더지 잡기',jump:'점프 게임',math:'암산 대결',g2048:'2048'}[kind];
+    cv.style.display=(kind==='mole'||kind==='math'||kind==='g2048')?'none':'';
     bestEl.textContent=best[kind].toLocaleString('ko-KR');
     msg.hidden=true;
     cancelAnimationFrame(raf);
-    game=kind==='blocks'?Blocks():kind==='plane'?Plane():kind==='mole'?Mole():kind==='jump'?Jump():kind==='math'?MathGame():Sudoku();
+    game=kind==='blocks'?Blocks():kind==='plane'?Plane():kind==='mole'?Mole():kind==='jump'?Jump():kind==='math'?MathGame():G2048();
     game.start();
   }
   function close(){ ov.classList.remove('on'); document.body.style.overflow=''; cancelAnimationFrame(raf); if(game&&game.stop)game.stop(); game=null; }
@@ -842,7 +837,7 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
   Object.keys(best).forEach(k=>{ const e=$('#best-'+k); if(e)e.textContent=best[k].toLocaleString('ko-KR'); });
   function over(kind,score){ openWithRank(kind); saveBest(kind,score); $('#g-msg-score').textContent=score.toLocaleString('ko-KR')+'점'; msg.hidden=false;
     if(window.FAM){ window.FAM.saveScore(kind,window.FAM.me(),score).catch(()=>{}); } renderRank(lastScores); }
-  const GAMES={blocks:'블록 쌓기',plane:'비행기 슈팅',mole:'두더지 잡기',jump:'점프 게임',math:'암산 대결',sudoku:'스도쿠 미니'};
+  const GAMES={blocks:'블록 쌓기',plane:'비행기 슈팅',mole:'두더지 잡기',jump:'점프 게임',math:'암산 대결',g2048:'2048'};
   let lastScores=[];
   function renderRank(scores){
     lastScores=scores; if(!window.FAM) return;
@@ -989,34 +984,34 @@ nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-
       stop(){ dead=true; clearInterval(tick); clearTimeout(lockT); if(el){el.remove();el=null;} }
     };
   }
-  // ===== 스도쿠 미니 =====
-  function Sudoku(){
-    const box=$('#g-box'); let el, N, BR, BC, sol, giv, cur, sel, left, score, solved, dead, tick, lockT;
-    ctl.innerHTML='<div class="g-hint">가로·세로·굵은 칸 안에 같은 숫자가 없게 채워요 · 3분 안에 많이 풀수록 높은 점수</div><div class="g-time" id="g-time">3:00</div>';
-    const shuffle=a=>{ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
-    function ok(g,r,c,v){ for(let i=0;i<N;i++){ if(g[r*N+i]===v||g[i*N+c]===v) return false; } const r0=r-r%BR,c0=c-c%BC; for(let i=0;i<BR;i++)for(let j=0;j<BC;j++){ if(g[(r0+i)*N+c0+j]===v) return false; } return true; }
-    function fill(g,i){ if(i===N*N) return true; if(g[i]) return fill(g,i+1); const r=Math.floor(i/N),c=i%N; for(const v of shuffle([...Array(N)].map((_,k)=>k+1))){ if(ok(g,r,c,v)){ g[i]=v; if(fill(g,i+1)) return true; g[i]=0; } } return false; }
-    function count(g,i,lim){ if(i===N*N) return 1; if(g[i]) return count(g,i+1,lim); const r=Math.floor(i/N),c=i%N; let n=0; for(let v=1;v<=N;v++){ if(ok(g,r,c,v)){ g[i]=v; n+=count(g,i+1,lim); g[i]=0; if(n>=lim) return n; } } return n; }
-    function gen(){ N=solved<2?4:6; BR=2; BC=N===4?2:3; sol=Array(N*N).fill(0); fill(sol,0); giv=sol.slice();
-      const keep=N===4?6:14; const idx=shuffle([...Array(N*N).keys()]); let removed=0;
-      for(const i of idx){ if(N*N-removed<=keep) break; const bk=giv[i]; giv[i]=0; if(count(giv.slice(),0,2)!==1){ giv[i]=bk; } else removed++; }
-      cur=giv.slice(); sel=-1; render(); }
-    function render(){ const grid=el.querySelector('.sgrid'); grid.style.gridTemplateColumns=`repeat(${N},1fr)`; grid.className='sgrid n'+N;
-      grid.innerHTML=cur.map((v,i)=>{ const r=Math.floor(i/N),c=i%N; const cls=['scell',giv[i]?'given':'',i===sel?'sel':'',(c%BC===BC-1&&c<N-1)?'br':'',(r%BR===BR-1&&r<N-1)?'bb':'',(v&&!giv[i]&&v!==sol[i])?'bad':''].filter(Boolean).join(' '); return `<button class="${cls}" data-i="${i}">${v||''}</button>`; }).join('');
-      grid.querySelectorAll('.scell').forEach(b=>b.addEventListener('pointerdown',e=>{ e.preventDefault(); const i=Number(b.dataset.i); if(giv[i]) return; sel=i; render(); }));
-      const pad=el.querySelector('.spad'); pad.innerHTML=[...Array(N)].map((_,k)=>`<button data-v="${k+1}">${k+1}</button>`).join('')+'<button data-v="0" class="erase">⌫</button>';
-      pad.querySelectorAll('button').forEach(b=>b.addEventListener('pointerdown',e=>{ e.preventDefault(); put(Number(b.dataset.v)); }));
-      el.querySelector('.slabel').textContent=`${N}×${N} · ${solved+1}번째 판`; }
-    function put(v){ if(dead||lockT||sel<0||giv[sel]) return; cur[sel]=v;
-      if(v&&v!==sol[sel]){ score=Math.max(0,score-10); scoreEl.textContent=score; if(navigator.vibrate)navigator.vibrate(50); }
-      render();
-      if(cur.every((x,i)=>x===sol[i])){ const pts=N===4?100:250; score+=pts; scoreEl.textContent=score; solved++; el.querySelector('.sgrid').classList.add('done'); const f=document.createElement('div'); f.className='mflash'; f.textContent='+'+pts+' 🎉'; f.style.color='#69F0AE'; el.appendChild(f); setTimeout(()=>f.remove(),700); lockT=setTimeout(()=>{ lockT=null; gen(); },900); } }
-    const fmt=t=>`${Math.floor(t/60)}:${String(t%60).padStart(2,'0')}`;
+  // ===== 2048 =====
+  function G2048(){
+    const box=$('#g-box'); let el, g, score, dead, moved, bestTile;
+    const COLORS={2:'#EEE4DA',4:'#EDE0C8',8:'#F2B179',16:'#F59563',32:'#F67C5F',64:'#F65E3B',128:'#EDCF72',256:'#EDCC61',512:'#EDC850',1024:'#EDC53F',2048:'#EDC22E'};
+    ctl.innerHTML='<div class="g-hint">화면을 밀거나 버튼으로 타일을 움직여요 · 같은 숫자가 만나면 합쳐져요 · 2048을 만들어 보세요!</div><div class="dpad small"><button class="up" data-d="u" aria-label="위">▲</button><button class="left" data-d="l" aria-label="왼쪽">◀</button><button class="down" data-d="d" aria-label="아래">▼</button><button class="right" data-d="r" aria-label="오른쪽">▶</button></div>';
+    ctl.querySelectorAll('[data-d]').forEach(b=>b.addEventListener('pointerdown',e=>{e.preventDefault();move(b.dataset.d);}));
+    const key=e=>{ const m={ArrowUp:'u',ArrowDown:'d',ArrowLeft:'l',ArrowRight:'r'}[e.key]; if(m){e.preventDefault();move(m);} };
+    function add(){ const empty=[]; g.forEach((v,i)=>{ if(!v) empty.push(i); }); if(!empty.length) return; const i=empty[Math.floor(Math.random()*empty.length)]; g[i]=Math.random()<.9?2:4; el.dataset.new=i; }
+    function slide(row){ let a=row.filter(Boolean), out=[], gained=0; for(let i=0;i<a.length;i++){ if(a[i]===a[i+1]){ out.push(a[i]*2); gained+=a[i]*2; i++; } else out.push(a[i]); } while(out.length<4) out.push(0); return {out,gained}; }
+    function move(d){ if(dead) return; const before=g.join(','); let gained=0; const lines=[];
+      for(let k=0;k<4;k++){ const idx=[]; for(let j=0;j<4;j++){ idx.push(d==='l'?k*4+j:d==='r'?k*4+(3-j):d==='u'?j*4+k:(3-j)*4+k); } lines.push(idx); }
+      lines.forEach(idx=>{ const {out,gained:gn}=slide(idx.map(i=>g[i])); gained+=gn; idx.forEach((i,j)=>g[i]=out[j]); });
+      if(g.join(',')===before) return;
+      score+=gained; scoreEl.textContent=score; bestTile=Math.max(bestTile,...g); add(); render();
+      if(gained>0){ const f=document.createElement('div'); f.className='mflash'; f.textContent='+'+gained; f.style.color='#FFEB3B'; el.appendChild(f); setTimeout(()=>f.remove(),600); }
+      if(!canMove()){ dead=true; setTimeout(()=>over('g2048',score),400); } }
+    function canMove(){ for(let i=0;i<16;i++){ if(!g[i]) return true; const r=Math.floor(i/4),c=i%4; if(c<3&&g[i]===g[i+1]) return true; if(r<3&&g[i]===g[i+4]) return true; } return false; }
+    function render(){ const grid=el.querySelector('.grid2048'); const nw=Number(el.dataset.new);
+      grid.innerHTML=g.map((v,i)=>`<div class="c2048${v?' v':''}${i===nw?' new':''}" style="${v?`background:${COLORS[v]||'#3C3A32'};color:${v<=4?'#776E65':'#fff'};font-size:${v>=1024?22:v>=128?26:30}px`:''}">${v||''}</div>`).join('');
+      el.querySelector('.l2048').textContent=bestTile>=2048?'🎉 2048 달성! 계속 더 높이!':`최고 타일 ${bestTile}`; delete el.dataset.new; }
+    let sx,sy; function ts(e){ sx=e.touches[0].clientX; sy=e.touches[0].clientY; }
+    function te(e){ if(sx==null) return; const dx=e.changedTouches[0].clientX-sx, dy=e.changedTouches[0].clientY-sy; sx=null; if(Math.max(Math.abs(dx),Math.abs(dy))<24) return; move(Math.abs(dx)>Math.abs(dy)?(dx>0?'r':'l'):(dy>0?'d':'u')); }
     return {
-      start(){ dead=false; left=180; score=0; solved=0; lockT=null; scoreEl.textContent='0'; $('#g-time').textContent=fmt(left); clearInterval(tick);
-        if(el)el.remove(); el=document.createElement('div'); el.id='sudoku-box'; el.innerHTML='<div class="slabel"></div><div class="sgrid"></div><div class="spad"></div>'; box.insertBefore(el,msg); gen();
-        tick=setInterval(()=>{ left--; $('#g-time').textContent=fmt(left); if(left<=0){ dead=true; clearInterval(tick); over('sudoku',score); } },1000); },
-      stop(){ dead=true; clearInterval(tick); clearTimeout(lockT); if(el){el.remove();el=null;} }
+      start(){ dead=false; score=0; bestTile=0; g=Array(16).fill(0); scoreEl.textContent='0';
+        if(el)el.remove(); el=document.createElement('div'); el.id='box2048'; el.innerHTML='<div class="l2048"></div><div class="grid2048"></div>'; box.insertBefore(el,msg);
+        add(); add(); bestTile=Math.max(...g); render();
+        el.addEventListener('touchstart',ts,{passive:true}); el.addEventListener('touchend',te,{passive:true}); window.addEventListener('keydown',key); },
+      stop(){ dead=true; window.removeEventListener('keydown',key); if(el){el.remove();el=null;} }
     };
   }
   // ===== 비행기 슈팅 =====
